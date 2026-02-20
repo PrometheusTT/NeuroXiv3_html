@@ -25,7 +25,7 @@ export default class NeuronLogo extends Vue {}
 <style scoped lang="less">
 .logo {
   text-decoration: none;
-  color: var(--primary-color, #0F766E);
+  color: var(--primary-color, #3F0D12);
   font-size: 50px;
   font-weight: 500;
   > * {

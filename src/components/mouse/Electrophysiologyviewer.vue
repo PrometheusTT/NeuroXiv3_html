@@ -561,12 +561,12 @@ export default class ElectrophysiologyViewer extends Vue {
 @card-bg: #ffffff;
 @card-border: #e4e7ed;
 @card-hover-border: #409eff;
-@card-selected-border: #0F766E;
+@card-selected-border: #9F1239;
 @header-bg: #fafbfc;
 @text-primary: #1a1a2e;
 @text-secondary: #606266;
 @text-muted: #909399;
-@accent: #0F766E;
+@accent: #9F1239;
 @accent-light: #e6f7f5;
 
 .ephys-viewer {

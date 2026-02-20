@@ -3,7 +3,7 @@
     <section class="mouse-content">
       <NeuronLogo class="neuron-logo" />
       <p class="subtitle">
-        NeuroXiv 2.0: From Morpho-Analysis to Multimodal Data Mining
+        NeuroXiv 3.0: From neuron and network structures to function modeling and brain dynamics
       </p>
       <a
         href="/v2/mouse.html"

@@ -137,7 +137,7 @@ export default class HeaderBar extends RouterHelper {
 
 <style scoped lang="less">
 .header-bar {
-  background-color: #0F766E;
+  background-color: var(--header-bg-color, #3F0D12);
   height: 80px;
   display: flex;
   align-items: center;
@@ -170,6 +170,40 @@ export default class HeaderBar extends RouterHelper {
 
   .tutorial-button {
     margin-right: 20px;
+  }
+
+  // 顶栏按钮：浅底胶囊样式
+  /deep/ .el-button--primary.is-plain {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #3F0D12;
+    border-radius: 20px;
+    font-weight: 500;
+    &:hover,
+    &:focus {
+      background-color: #9F1239;
+      border-color: #9F1239;
+      color: #fff;
+    }
+    &:active {
+      background-color: #881337;
+      border-color: #881337;
+      color: #fff;
+    }
+  }
+
+  /deep/ .el-button.is-plain {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #3F0D12;
+    border-radius: 20px;
+    font-weight: 500;
+    &:hover,
+    &:focus {
+      background-color: #9F1239;
+      border-color: #9F1239;
+      color: #fff;
+    }
   }
 }
 </style>
