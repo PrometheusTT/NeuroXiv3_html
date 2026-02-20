@@ -50,7 +50,6 @@
       <el-tab-pane
           label="Electrophysiology viewer"
           name="electrophysiologyViewer"
-          :lazy="true"
       >
         <ElectrophysiologyViewer
             ref="electrophysiologyViewer"
@@ -67,7 +66,7 @@ import NeuronInfo from '@/components/mouse/NeuronInfo.vue'
 import MultiNeuronsViewer from '@/components/mouse/MultiNeuronsViewer.vue'
 import { ElTabPane } from 'element-ui/types/tab-pane'
 import NeuronFeatureMap from '@/components/mouse/NeuronFeatureMap.vue'
-import ElectrophysiologyViewer  from "@/components/mouse/Electrophysiologyviewer.vue";
+import ElectrophysiologyViewer from '@/components/mouse/Electrophysiologyviewer.vue'
 @Component({
   components: { NeuronFeatureMap, NeuronInfo, NeuronStates, MultiNeuronsViewer, ElectrophysiologyViewer }
 })
@@ -100,7 +99,7 @@ export default class NeuronDetail extends Vue {
       this.$emit('viewNeurons')
     } else if (tab.name === 'neuronFeatureMap') {
       this.$emit('showNeuronMap')
-    }else if (tab.name === 'electrophysiologyViewer') {
+    } else if (tab.name === 'electrophysiologyViewer') {
       // 通知父组件加载电生理数据
       this.$emit('loadEphysData')
     }
