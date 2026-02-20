@@ -307,14 +307,20 @@ import { Component, Vue, Prop, Watch, Ref } from 'vue-property-decorator'
 import { debounce } from 'lodash'
 
 interface EphysNeuron {
+  // eslint-disable-next-line camelcase
   neuron_id: string
   pid: string
   cid: string
   acronym: string
+  // eslint-disable-next-line camelcase
   atlas_id: number
+  // eslint-disable-next-line camelcase
   me_atlas_id: number
+  // eslint-disable-next-line camelcase
   me_x: number
+  // eslint-disable-next-line camelcase
   me_y: number
+  // eslint-disable-next-line camelcase
   me_z: number
   _imgLoaded?: boolean
 }
@@ -369,7 +375,7 @@ export default class ElectrophysiologyViewer extends Vue {
   private debouncedApplyFilters: any = null
 
   // Waveform image base path - adjust to your actual path
-  private waveformBasePath: string = '/data/ephys/waveforms/'
+  private waveformBasePath: string = '/data/ephys/waveform/'
 
   created () {
     this.debouncedApplyFilters = debounce(() => {

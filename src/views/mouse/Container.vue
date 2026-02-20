@@ -1235,6 +1235,7 @@ export default class Container extends Vue {
 
     try {
       const ephysRaw = require('@/assets/neuron_waveforms.json')
+      // eslint-disable-next-line camelcase
       const data = Object.entries(ephysRaw).map(([neuron_id, fields]: [string, any]) => ({
         neuron_id,
         ...fields
