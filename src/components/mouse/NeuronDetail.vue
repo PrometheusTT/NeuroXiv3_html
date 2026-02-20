@@ -47,6 +47,16 @@
           @searchROINeurons="$emit('searchROINeurons', $event)"
         />
       </el-tab-pane>
+      <el-tab-pane
+          label="Electrophysiology viewer"
+          name="electrophysiologyViewer"
+      >
+        <ElectrophysiologyViewer
+            ref="neuronStates"
+            :neurons-list="neuronsList"
+            :is-initial-state="isInitialState"
+        />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -58,15 +68,16 @@ import NeuronInfo from '@/components/mouse/NeuronInfo.vue'
 import MultiNeuronsViewer from '@/components/mouse/MultiNeuronsViewer.vue'
 import { ElTabPane } from 'element-ui/types/tab-pane'
 import NeuronFeatureMap from '@/components/mouse/NeuronFeatureMap.vue'
-
+import ElectrophysiologyViewer  from "@/components/mouse/Electrophysiologyviewer.vue";
 @Component({
-  components: { NeuronFeatureMap, NeuronInfo, NeuronStates, MultiNeuronsViewer }
+  components: { NeuronFeatureMap, NeuronInfo, NeuronStates, MultiNeuronsViewer, ElectrophysiologyViewer }
 })
 export default class NeuronDetail extends Vue {
   @Ref('neuronFeatureMap') readonly neuronFeatureMap!: NeuronFeatureMap
   @Ref('neuronStates') readonly neuronStates!: NeuronStates
   @Ref('neuronInfo') readonly neuronInfo!: NeuronInfo
   @Ref('multiNeuronsViewer') readonly multiNeuronsViewer!: MultiNeuronsViewer
+  @Ref('electrophysiologyViewer') readonly electrophysiologyViewer!: ElectrophysiologyViewer
   @Prop({ required: true }) loadFirstNeuron!: any
   @Prop({ required: true }) readonly neuronsList!: any[]
   @Prop({ required: true }) readonly isInitialState!: boolean;
