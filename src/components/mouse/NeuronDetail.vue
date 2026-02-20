@@ -50,11 +50,10 @@
       <el-tab-pane
           label="Electrophysiology viewer"
           name="electrophysiologyViewer"
+          :lazy="true"
       >
         <ElectrophysiologyViewer
-            ref="neuronStates"
-            :neurons-list="neuronsList"
-            :is-initial-state="isInitialState"
+            ref="electrophysiologyViewer"
         />
       </el-tab-pane>
     </el-tabs>
@@ -101,6 +100,9 @@ export default class NeuronDetail extends Vue {
       this.$emit('viewNeurons')
     } else if (tab.name === 'neuronFeatureMap') {
       this.$emit('showNeuronMap')
+    }else if (tab.name === 'electrophysiologyViewer') {
+      // 通知父组件加载电生理数据
+      this.$emit('loadEphysData')
     }
   }
   handleGeneObj (conditions:any) {
