@@ -1,0 +1,76 @@
+// elementUI 一些样式调整, 跟主题颜色无关, 例如导航菜单的缩进等, 这些调整是全局通用的
+
+// loading
+.el-loading-spinner {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background-color: fade(white, 60);
+  font-weight: bold;
+  width: 100px;
+  border-radius: 5px;
+  padding: 10px;
+  left: 50%;
+  margin-left: -50px;
+  margin-top: -47px;
+  .el-loading-text {
+    white-space: nowrap;
+  }
+}
+
+// primary button 样式
+.el-button--primary {
+  &:hover,
+  &:focus {
+    background-color: #115E59;
+    border-color: #115E59;
+  }
+  &:active {
+    background-color: #115E59;
+    border-color: #115E59;
+  }
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.35);
+  }
+}
+
+// plain primary button hover/active
+.el-button--primary.is-plain {
+  &:hover,
+  &:focus {
+    background-color: #14B8A6;
+    border-color: #14B8A6;
+    color: #fff;
+  }
+  &:active {
+    background-color: #115E59;
+    border-color: #115E59;
+    color: #fff;
+  }
+}
+
+// link 颜色
+a, .el-link--primary {
+  color: #0F766E;
+  &:hover {
+    color: #115E59;
+  }
+}
+
+// focus ring
+*:focus-visible {
+  outline: 2px solid rgba(20, 184, 166, 0.35);
+  outline-offset: 2px;
+}
+
+// 调整 el-tabs 样式, 高度铺满
+.el-tabs.full-height {
+  display: flex;
+  flex-flow: column nowrap;
+  > .el-tabs__content {
+    height: 0;
+    flex: 1 1 auto;
+    .el-tab-pane {
+      height: 100%;
+    }
+  }
+}

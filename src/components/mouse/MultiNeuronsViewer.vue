@@ -1,0 +1,756 @@
+<template>
+  <div class="multi-neurons-viewer-container">
+    <div class="left-side">
+      <el-tabs
+        v-model="selectedTab"
+        :stretch="true"
+        class="full-height"
+      >
+        <el-tab-pane
+          label="viewer property"
+          name="viewer property"
+        >
+          <div>
+            <el-collapse v-model="activeNames">
+              <el-collapse-item
+                title="brain"
+                name="brain"
+              >
+                <div style="display: flex; align-items: center; margin-bottom: 8px">
+                  <el-input
+                    v-model="searchKeyword"
+                    placeholder="brain regions"
+                    style="width: 100%; margin-right: 3px;padding: 0 6px 0 6px;"
+                    @keyup.enter.native="onSearch"
+                  />
+                  <el-button
+                    type="primary"
+                    style="font-size: 12px;padding:11px 6px 11px 6px"
+                    @click="onSearch"
+                  >
+                    Search
+                  </el-button>
+                </div>
+                <el-tree
+                  ref="brainTree"
+                  :data="filteredData"
+                  :render-after-expand="false"
+                  show-checkbox
+                  node-key="id"
+                  :props="{ label: 'acronym' }"
+                  :check-strictly="true"
+                  :render-content="renderTreeNode"
+                  @check-change="checkBrainTreeCallback"
+                >
+                  <template
+                    slot-scope="{ node, data }"
+                  >
+                    <el-tooltip
+                      effect="dark"
+                      :content="data.name"
+                      placement="right"
+                    >
+                      <span>{{ node.label }}</span>
+                    </el-tooltip>
+                  </template>
+                </el-tree>
+              </el-collapse-item>
+              <el-collapse-item
+                title="slice"
+                name="slice"
+              >
+                <SliceSection
+                  slice-name="Sagittal"
+                  :max-value="sagittalMax"
+                  :value-step="step"
+                  :_switch-change="switchChange"
+                  :_slider-change="sliderChange"
+                />
+                <SliceSection
+                  slice-name="Axial"
+                  :max-value="AxialMax"
+                  :value-step="step"
+                  :_switch-change="switchChange"
+                  :_slider-change="sliderChange"
+                />
+                <SliceSection
+                  slice-name="Coronal"
+                  :max-value="coronalMax"
+                  :value-step="step"
+                  :_switch-change="switchChange"
+                  :_slider-change="sliderChange"
+                />
+              </el-collapse-item>
+              <el-collapse-item
+                title="roi"
+                name="roi"
+              >
+                <ROI
+                  ref="ROI"
+                  :_show-r-o-i="showROI"
+                  :_hide-r-o-i="hideROI"
+                  :_update-r-o-i-ball="updateROIBall"
+                  @searchROINeurons="$emit('searchROINeurons', $event)"
+                />
+              </el-collapse-item>
+              <el-collapse-item
+                title="visualized structures"
+                name="visualized structures"
+              >
+                <el-checkbox
+                  v-model="showAllSoma"
+                  label="soma"
+                  name="soma"
+                  @change="setSoma"
+                />
+                <el-checkbox
+                  v-model="showAllAxon"
+                  label="axon"
+                  name="axon"
+                  @change="setAxon"
+                />
+                <el-checkbox
+                  v-model="showAllBasal"
+                  label="basal dendrite"
+                  name="basal dendrite"
+                  @change="setBasal"
+                />
+                <el-checkbox
+                  v-model="showAllApical"
+                  label="apical dendrite"
+                  name="apical dendrite"
+                  @change="setApical"
+                />
+              </el-collapse-item>
+            </el-collapse>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane
+          label="molecular info"
+          name="gene info"
+        >
+          <div>
+            <el-collapse v-model="activeNames">
+              <el-collapse-item
+                title="Tran_Data_Tree"
+                name="Tran_Data_Tree"
+              >
+                <el-tree
+                  ref="geneTree"
+                  :data="geneData"
+                  :render-after-expand="true"
+                  show-checkbox
+                  node-key="id"
+                  :props="defaultProps"
+                  :check-strictly="true"
+                >
+                  <template #default="{ node, data }">
+                    <span style="display: inline-flex; align-items: center; gap: 4px">
+                      <span :style="{ color: data.color || '#333' }">
+                        {{ data.label }}
+                      </span>
+                      <el-tooltip
+                        class="question-icon"
+                        :class="{ 'question-icon-active': data.id === activeNodeId }"
+                        :content="data.label"
+                      >
+                        <div
+                          class="icon-container"
+                          style="
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background-color: #f5f5f5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          margin-left: 5px;"
+                          @click.stop="showNodeInfo(data,$event)"
+                        >
+                          <i
+                            class="el-icon-warning-outline"
+                            style="font-size: 12px; color: rgba(0, 0, 0, 0.7); background: none !important; border: none; text-shadow: none;"
+                          />
+                        </div>
+                      </el-tooltip>
+                    </span>
+                  </template>
+                </el-tree>
+                <div class="search-container">
+                  <el-button
+                    type="primary"
+                    @click="handleLoadGeneData"
+                  >
+                    Load Data
+                  </el-button>
+                </div>
+              </el-collapse-item>
+            </el-collapse>
+          </div>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
+
+    <div class="separator" />
+    <div class="right-side">
+      <NeuronScene
+        ref="neuronScene"
+        @dblclick.native="handleDBClick"
+        @neuronView="$emit('neuronView', $event)"
+      />
+    </div>
+    <div class="right-top">
+      <el-button
+        @click="ChangeResolution"
+      >
+        {{ buttonText }}
+      </el-button>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Component, Ref, Vue } from 'vue-property-decorator'
+import NeuronScene from '@/components/mouse/NeuronScene.vue'
+import SliceSection from '@/components/mouse/SliceSection.vue'
+import ROI from '@/components/mouse/ROI.vue'
+import FloatingTag from './FloatingTag.vue'
+import { showLoading, increaseLoadingCount, decreaseLoadingCount, LoadingZero } from '@/request/RequestWrapper'
+
+// import neuronViewerBaseData from './surf_tree.json'
+import neuronViewerBaseData from './surf_tree_ccf-me.json'
+
+import neuronViewerBaseDataFMost from './surf_tree_fmost.json'
+import geneTranData from './tran-data-type-tree.json'
+
+import ColorPicker from './ColorPicker.vue'
+const rootId = neuronViewerBaseData[0].id
+const rootIdFMost = neuronViewerBaseDataFMost[0].id
+const SliceAtlas = 'CCFv3'
+const SliceAtlasfMOST = 'CCF-thin'
+
+@Component<NeuronInfo>({
+  mounted () {
+    this.loadRootComponent()
+    this.neuronScene.multiViewerSoma = new Map()
+    this.neuronScene.multiViewerSomaPos = new Map()
+    this.initializeFullNameMap(this.neuronViewerData)
+  },
+  components: {
+    NeuronScene,
+    SliceSection,
+    ROI,
+    FloatingTag
+  }
+})
+export default class NeuronInfo extends Vue {
+  @Ref('neuronScene') neuronScene!: InstanceType<typeof NeuronScene>
+  @Ref('ROI') ROI!: ROI
+  @Ref('brainTree') brainTree!: any
+  @Ref('geneTree') geneTree!: any
+  public neuronViewerData: any = this.$store.state.atlas === 'CCFv3' ? neuronViewerBaseData : neuronViewerBaseDataFMost // neuronViewerBaseData
+  private rootId: number = this.$store.state.atlas === 'CCFv3' ? rootId : rootIdFMost // rootId
+  private sliceAtlas: any = this.$store.state.atlas
+  private activeNames: any = ['brain']
+  private sagittalMax: number = 11375 // 18.20
+  private AxialMax: number = 7975 // 12.76
+  private coronalMax: number = 13175 // 21.08
+  private step: number = 25
+  public selectedTab: string = 'viewer property'
+  public showAllSoma:boolean = false
+  public showAllAxon:boolean = true
+  public showAllBasal:boolean = true
+  public showAllApical:boolean = true
+  public searchKeyword: string = ''
+  public filteredData: any = this.neuronViewerData
+  public checkedNodes: [] = [] // 用于保存已选中的节点
+  public buttonText:string = 'switch to raw morpho'
+  public fullNameMap: { [key: string]: string } = {}
+  public geneData: any = geneTranData
+  defaultProps = {
+    children: 'child', // 指定子节点字段
+    label: 'label' // 指定节点显示文本字段
+  };
+  public activeNodeId:any = null
+  public currentNodeData:any = null
+  public formattedNodeData:any = ''
+
+  private initializeFullNameMap (data: any[]) {
+    data.forEach(item => {
+      if (item.acronym && item.name) {
+        // 将简称和全称都转换为小写，存入映射表
+        this.fullNameMap[item.acronym.toLowerCase()] = item.name.toLowerCase()
+      }
+      if (item.children && item.children.length) {
+        this.initializeFullNameMap(item.children)
+      }
+    })
+  }
+  public handleLoadGeneData () {
+    const checkedNodes = this.geneTree.getCheckedNodes()
+    const conditions:any = {}
+    conditions.brain_atlas = this.$store.state.atlas
+    checkedNodes.forEach((node: { name: any; id: any }) => {
+      // 使用节点的name作为键，id作为值（若数据使用label作为name则改为node.label）
+      const name = node.name // 或 node.label（根据实际数据字段）
+      const id = node.id
+
+      if (name) {
+        if (!conditions[name]) {
+          conditions[name] = []
+        }
+        conditions[name].push(id)
+      }
+    })
+    console.log(conditions)
+    this.$emit('generateGeneObj', conditions)
+  }
+  private setAxon () {
+    this.$emit('setVisualizedAxon')
+  }
+  private setBasal () {
+    console.log('showAllBasal')
+    this.$emit('setVisualizedBasal')
+  }
+  private setApical () {
+    console.log('showAllApical')
+    this.$emit('setVisualizedApical')
+  }
+  private setSoma () {
+    console.log('showAllSoma')
+    this.$emit('setVisualizedSoma')
+  }
+
+  private ChangeResolution () {
+    this.$emit('changeResolution')
+  }
+  /**
+   * 脑区el-tree节点状态改变的回调函数
+   * @param data 节点数据
+   * @param checked 节点是否被选中
+   * @private
+   */
+  private async checkBrainTreeCallback (data: any, checked: boolean) {
+    if (data.hasOwnProperty('src')) {
+      if (checked) {
+        if (this.neuronScene.checkLoadComponent(data)) {
+          this.neuronScene.setComponentVisible(data, true)
+        } else {
+          // @ts-ignore
+          let node = this.$refs.brainTree.getNode(data.id)
+          node.loading = true
+          let loadingInstance = showLoading(document.body)
+          increaseLoadingCount()
+          await this.neuronScene.loadComponent(data)
+          node.loading = false
+          decreaseLoadingCount()
+          if (LoadingZero()) {
+            loadingInstance.close()
+          }
+        }
+      } else {
+        this.neuronScene.setComponentVisible(data, false)
+      }
+    }
+  }
+
+  /**
+   * 改变switch的回调函数，用于决定slice是否显示
+   * @param isSwitch 是否显示slice
+   * @param sliceName SLice的方向名称
+   */
+  public switchChange (isSwitch: boolean, sliceName: string) {
+    if (isSwitch) {
+      if (this.neuronScene.checkLoadSlice(sliceName)) {
+        this.neuronScene.setSliceVisible(sliceName, true)
+      } else {
+        this.neuronScene.loadSlice(sliceName, this.sliceAtlas)
+      }
+    } else {
+      this.neuronScene.setSliceVisible(sliceName, false)
+    }
+  }
+
+  /**
+   * 改变滑动条的回调函数，用于切换slice的位置
+   * @param value slice的位置
+   * @param sliceName SLice的方向名称
+   */
+  public sliderChange (value: number, sliceName: string) {
+    this.neuronScene.updateSlice(sliceName, Math.round(value / 25), this.sliceAtlas)
+  }
+
+  /**
+   * 加载脑区的root组件
+   * @private
+   */
+  private loadRootComponent () {
+    this.$nextTick(() => {
+      // @ts-ignore
+      let rootNode = this.$refs.brainTree.getNode(this.rootId)
+      rootNode.expanded = true
+      // @ts-ignore
+      this.$refs.brainTree.setChecked(this.rootId, true)
+    })
+  }
+
+  /**
+   * 鼠标双击的回调函数，用于highlight渲染的组件，并显示出该组件的名字
+   * @event 鼠标事件
+   */
+  private handleDBClick (event: any) {
+    event.preventDefault()
+    let p = this.neuronScene.handleMouseDoubleClickNeuron(event)
+    this.ROI.setROI(Math.round(p[0]), Math.round(p[1]), Math.round(p[2]))
+  }
+
+  /**
+   * 显示代表ROI的小球
+   * @param r ROI的半径
+   * @private
+   */
+  private showROI (r: number) {
+    const roiInitialPosition = this.neuronScene.showROIBall(r)
+    if (roiInitialPosition) {
+      this.ROI.setROI(Math.round(roiInitialPosition[0]), Math.round(roiInitialPosition[1]), Math.round(roiInitialPosition[2]))
+    }
+  }
+
+  /**
+   * 隐藏代表ROI的小球
+   * @private
+   */
+  private hideROI () {
+    this.neuronScene.setROIBallVisible(false)
+  }
+
+  /**
+   * 更新代表ROI的小球
+   * @param x ROI在标准脑坐标系下的x坐标
+   * @param y ROI在标准脑坐标系下的y坐标
+   * @param z ROI在标准脑坐标系下的z坐标
+   * @param r ROI的半径
+   * @private
+   */
+  private updateROIBall (x: number, y: number, z: number, r: number) {
+    this.neuronScene.updateROIBall(x, y, z, r)
+  }
+
+  onSearch () {
+    const keyword = this.searchKeyword.toLowerCase()
+    this.checkedNodes = this.brainTree.getCheckedNodes() // 保存当前选中的节点
+
+    if (keyword) {
+      // 遍历节点以匹配关键字并展开相应节点
+      this.collapseAllNodes(this.neuronViewerData) // 递归地收起所有节点
+      this.expandToMatch(this.neuronViewerData, keyword)
+    } else {
+      // 如果关键字为空，收起所有节点
+      this.collapseAllNodes(this.neuronViewerData)
+    }
+
+    this.$nextTick(() => {
+      this.restoreCheckedNodes(this.checkedNodes) // 恢复选中状态
+      this.selectRootNode() // 确保根节点选中
+    })
+  }
+
+  // 递归地收起所有节点
+  private collapseAllNodes (nodes: any[]) {
+    nodes.forEach(node => {
+      const treeNode = this.brainTree.getNode(node.id)
+      if (treeNode) {
+        treeNode.expanded = false
+      }
+      if (node.children && node.children.length) {
+        this.collapseAllNodes(node.children)
+      }
+    })
+  }
+
+  // 修改后的 expandToMatch 方法
+  private expandToMatch (nodes: any[], keyword: string) {
+    nodes.forEach(node => {
+      const treeNode = this.brainTree.getNode(node.id)
+      if (treeNode) {
+        const acronym = node.acronym ? node.acronym.toLowerCase() : ''
+        const name = node.name ? node.name.toLowerCase() : ''
+        const fullNameFromMap = this.fullNameMap[acronym] || ''
+
+        // 检查当前节点的 acronym、name 以及映射表中的全称是否匹配关键字
+        const isMatch =
+          acronym.includes(keyword) ||
+          name.includes(keyword) ||
+          fullNameFromMap.includes(keyword)
+
+        if (isMatch) {
+          treeNode.expanded = true // 展开匹配的节点
+          this.expandParentNodes(node.id) // 展开父节点
+        } else {
+          treeNode.expanded = false // 收起不匹配的节点
+        }
+      }
+      if (node.children && node.children.length) {
+        this.expandToMatch(node.children, keyword) // 递归匹配子节点
+      }
+    })
+  }
+
+  private expandParentNodes (nodeId: any) {
+    let currentNode = this.brainTree.getNode(nodeId)
+    while (currentNode && currentNode.parent) {
+      const parentNode = currentNode.parent
+      if (parentNode) {
+        parentNode.expanded = true // 展开父节点
+      }
+      currentNode = parentNode
+    }
+  }
+
+  private selectRootNode () {
+    const rootNode = this.brainTree.getNode(this.neuronViewerData[0].id)
+    if (rootNode) {
+      this.brainTree.setChecked(rootNode.data.id, true, true) // 确保根节点选中
+    }
+  }
+
+  private restoreCheckedNodes (checkedNodes: any[]) {
+    checkedNodes.forEach(node => {
+      this.brainTree.setChecked(node.id, true, true) // 恢复选中状态
+    })
+  }
+
+  renderTreeNode (createElement: any, { node, data }: any) {
+    return createElement('span', {
+      style: {
+        display: 'flex',
+        alignItems: 'center'
+      },
+      attrs: {
+        title: data.name || node.label // 动态绑定 title，优先显示 help_info
+      },
+      on: {
+        click: (event: MouseEvent) => {
+          event.stopPropagation() // 阻止父容器的点击事件冒泡
+        }
+      }
+    }, [
+      // 在节点前面加上颜色选择器，并调整大小和样式
+      createElement(ColorPicker, {
+        ref: 'colorPicker_' + data.id, // 为每个节点的颜色选择器设置一个唯一的 ref
+        style: {
+          marginRight: '8px', // 设置与文字的间距
+          pointerEvents: 'auto', // 确保颜色选择器可以捕获点击事件
+          border: 'none',
+          shadow: 'none'
+        },
+        on: {
+          'color-selected': (color: string) => this.neuronScene.updateVtkColor(data.id, this.hexToRgb(color)),
+          'mousedown': (event: MouseEvent) => {
+            event.stopPropagation() // 阻止 mousedown 事件的冒泡
+          },
+          'click': (event: MouseEvent) => {
+            event.stopPropagation() // 阻止 click 事件的冒泡
+          }
+        },
+        hook: {
+          insert: (vnode: { componentInstance: any }) => {
+            const colorPicker = vnode.componentInstance as any
+            colorPicker.updateSize(25, 25) // 调整大小为 25x25 px
+            colorPicker.setColor(this.rgbToHex([data.rgb_triplet[0], data.rgb_triplet[1], data.rgb_triplet[2]]))
+          }
+        }
+      }),
+      // 渲染节点的标签
+      createElement('span', {
+        style: {
+          pointerEvents: 'none' // 禁止标签文本部分处理点击事件
+        }
+      }, node.label)
+    ])
+  }
+
+  hexToRgb (hex: string): [number, number, number] {
+    const bigint = parseInt(hex.slice(1), 16)
+    const r = (bigint >> 16) & 255
+    const g = (bigint >> 8) & 255
+    const b = bigint & 255
+    return [r, g, b]
+  }
+
+  rgbToHex (rgb: any[]) {
+    // console.log(`#${rgb.map(x => x.toString(16).padStart(2, '0')).join('')}`)
+    return `#${rgb.map(x => x.toString(16).padStart(2, '0')).join('')}`
+  }
+  // showNodeInfo (data: { [x: string]: any; id?: any; children?: any }, event: { currentTarget: any }) {
+  //   // 标记当前激活的节点
+  //   this.activeNodeId = data.id
+  //
+  //   // 克隆数据并移除children
+  //   const { child, ...nodeData } = data
+  //
+  //   // 格式化显示数据
+  //   this.formattedNodeData = Object.entries(nodeData)
+  //     .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+  //     .join('\n')
+  //
+  //   // 更新当前节点数据（触发浮动标签显示）
+  //   this.currentNodeData = nodeData
+  //
+  //   // 动态添加激活类到点击元素
+  //   const target = event.currentTarget
+  //   target.classList.add('question-icon-active')
+  //
+  //   // 监听下一次DOM更新后移除类
+  //   this.$nextTick(() => {
+  //     setTimeout(() => target.classList.remove('question-icon-active'), 100)
+  //   })
+  //   const rect = target.getBoundingClientRect()
+  //
+  //   // 传递坐标给祖父组件
+  //   this.$emit('showGeneNodeInfo', {
+  //     title: data.label,
+  //     message: this.formattedNodeData,
+  //     position: {
+  //       x: rect.left + window.scrollX, // 绝对坐标 X
+  //       y: rect.top + window.scrollY
+  //     },
+  //     color: data.color
+  //   })
+  // }
+  showNodeInfo (data: { [x: string]: any; id?: any; children?: any; name?: any }, event: { currentTarget: any }) {
+    // Mark the currently active node
+    this.activeNodeId = data.id
+    const { child, ...nodeData } = data
+    // Define the fields to display based on the node type
+    const fieldsToShow = {
+      class: ['label', 'level', 'neighborhood', 'number_of_subclasses', 'number_of_neurons'],
+      subclass: ['label', 'markers', 'transcription_factor_markers', 'dominant_neurotransmitter_type', 'neighborhood', 'number_of_supertypes', 'number_of_neurons'],
+      supertype: ['label', 'markers', 'within_subclass_markers', 'neighborhood', 'number_of_clusters', 'number_of_neurons'],
+      cluster: [
+        'label',
+        'neighborhood',
+        'anatomical_annotation',
+        'broad_region_distribution',
+        'dominant_neurotransmitter_type',
+        'neurotransmitter_mark_genes',
+        'neuropeptide_mark_genes',
+        'markers',
+        'merfish_markers',
+        'transcription_factor_markers',
+        'within_subclass_markers',
+        'number_of_neurons'
+      ]
+    }
+
+    // Determine the type of the node (based on the 'name' property)
+    const nodeType = nodeData.name as keyof typeof fieldsToShow
+
+    // Filter the node data based on the node type
+    const filteredNodeData = Object.entries(nodeData)
+      .filter(([key]) => fieldsToShow[nodeType]?.includes(key))
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+
+    console.log('filteredNodeData', filteredNodeData)
+
+    // Format the filtered data for display
+    this.formattedNodeData = Object.entries(filteredNodeData)
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join('\n')
+
+    console.log('formattedNodeData', this.formattedNodeData)
+
+    // Update the current node data (triggers the floating label display)
+    this.currentNodeData = filteredNodeData
+
+    // Dynamically add the active class to the clicked element
+    const target = event.currentTarget
+    target.classList.add('question-icon-active')
+
+    // Listen for the next DOM update and remove the class
+    this.$nextTick(() => {
+      setTimeout(() => target.classList.remove('question-icon-active'), 100)
+    })
+
+    const rect = target.getBoundingClientRect()
+
+    // Pass the coordinates to the grandparent component
+    this.$emit('showGeneNodeInfo', {
+      title: data.label,
+      message: this.formattedNodeData,
+      position: {
+        x: rect.left + window.scrollX, // Absolute X coordinate
+        y: rect.top + window.scrollY
+      },
+      color: data.color
+    })
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="less">
+.multi-neurons-viewer-container {
+  height: 100%;
+  color: black;
+  display: flex;
+  flex-flow: row nowrap;
+  border-radius: 5px;
+  position: relative;
+  .left-side, .right-side {
+    height: 100%;
+    overflow: auto;
+    padding: 10px;
+  }
+  .separator {
+    width: 1px;
+    height: 100%;
+    background-color: lightgrey;
+  }
+  .left-side {
+    width: 360px;
+    .el-tabs {
+      height: 100%;
+      .el-tab-pane {
+        overflow: auto;
+      }
+    }
+  }
+  .right-side {
+    flex: 1;
+  }
+  .right-top {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+  }
+  .question-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: background-color 0.3s;
+  }
+
+  .question-icon:hover {
+    background-color: #e0e0e0;
+  }
+
+  .question-icon i {
+    font-size: 14px;
+    color: #666;
+  }
+
+  /* 激活状态的透明类（用于定位） */
+  .question-icon-active {
+    opacity: 0 !important;
+  }
+}
+</style>
