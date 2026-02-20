@@ -1224,31 +1224,28 @@ export default class Container extends Vue {
       color: data.color
     })
   }
-  private async loadEphysData () {
-    const viewer = this.neuronDetail.electrophysiologyViewer
 
-    // 已有数据就不重复加载
+  private async loadEphysData () {
+    // 等 tab 内容渲染完毕
+    await this.$nextTick()
+
+    const viewer = this.neuronDetail.electrophysiologyViewer
+    if (!viewer) return
     if (viewer.allData.length > 0) return
 
     try {
-      // 读取 public/ 目录下的本地 JSON
-      const res = await fetch('/data/neuron_waveforms.json')
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-      // JSON 是 { neuron_id: { pid, cid, acronym, ... } } 格式
-      // 转成 ElectrophysiologyViewer 需要的数组格式
-      const raw: Record<string, any> = await res.json()
-      const data = Object.entries(raw).map(([neuron_id, fields]) => ({
+      const ephysRaw = require('@/assets/neuron_waveforms.json')
+      const data = Object.entries(ephysRaw).map(([neuron_id, fields]: [string, any]) => ({
         neuron_id,
         ...fields
       }))
-
       viewer.setData(data)
     } catch (e) {
       console.error('[loadEphysData] Failed:', e)
       this.$message.error('Failed to load electrophysiology data')
     }
   }
+
   @Watch('$route.query.id')
   async handleIDChange (newId: string, oldId: string) {
     if (newId && newId !== oldId) {
