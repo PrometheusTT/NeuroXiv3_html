@@ -1234,7 +1234,9 @@ export default class Container extends Vue {
     if (viewer.allData.length > 0) return
 
     try {
-      const ephysRaw = require('@/assets/neuron_waveforms.json')
+      const resp = await fetch(`${process.env.BASE_URL}neuron_waveforms.json`)
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+      const ephysRaw = await resp.json()
       // eslint-disable-next-line camelcase
       const data = Object.entries(ephysRaw).map(([neuron_id, fields]: [string, any]) => ({
         neuron_id,
