@@ -283,13 +283,13 @@
           </div>
         </div>
         <div class="detail-actions">
-          <el-button
-              type="primary"
-              size="small"
-              @click="locateInViewer(detailItem)"
-          >
-            <i class="el-icon-location-outline" /> Locate in 3D Viewer
-          </el-button>
+<!--          <el-button-->
+<!--              type="primary"-->
+<!--              size="small"-->
+<!--              @click="locateInViewer(detailItem)"-->
+<!--          >-->
+<!--            <i class="el-icon-location-outline" /> Locate in 3D Viewer-->
+<!--          </el-button>-->
           <el-button
               size="small"
               @click="exportNeuronData(detailItem)"
