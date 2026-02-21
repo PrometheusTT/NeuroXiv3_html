@@ -375,7 +375,7 @@ export default class ElectrophysiologyViewer extends Vue {
   private debouncedApplyFilters: any = null
 
   // Waveform image base path - adjust to your actual path
-  private waveformBasePath: string = '/data/ephys/waveform/'
+  private waveformBasePath: string = '/v3/data/ephys/waveform/'
 
   created () {
     this.debouncedApplyFilters = debounce(() => {
