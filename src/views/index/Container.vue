@@ -6,7 +6,7 @@
         NeuroXiv 3.0: From neuron and network structures to function modeling and brain dynamics
       </p>
       <a
-        href="/v2/mouse.html"
+        href="/v3/mouse.html"
         class="hero-card"
       >
         <div class="hero-card-bg" />
