@@ -5,38 +5,72 @@
       <p class="subtitle">
         NeuroXiv 3.0: From neuron and network structures to function modeling and brain dynamics
       </p>
-      <a
-        href="/v3/mouse.html"
-        class="hero-card"
-      >
-        <div class="hero-card-bg" />
-        <img
-          class="dendrite-img"
-          src="@/assets/multimodal.png"
-          alt="dendrite"
+      <div class="hero-cards-row">
+        <a
+          href="/v3/mouse.html"
+          class="hero-card"
         >
-        <div class="hero-card-content">
-          <span class="adventure-text">Begin your multimodal<br>data adventure</span>
-          <div class="arrow-circle">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line
-                x1="5"
-                y1="12"
-                x2="19"
-                y2="12"
-              />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+          <div class="hero-card-bg" />
+          <img
+            class="dendrite-img"
+            src="@/assets/multimodal.png"
+            alt="dendrite"
+          >
+          <div class="hero-card-content">
+            <span class="adventure-text">Explore Mouse<br>Brain Neurons</span>
+            <div class="arrow-circle">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line
+                  x1="5"
+                  y1="12"
+                  x2="19"
+                  y2="12"
+                />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
+        <a
+          href="/v3/human.html"
+          class="hero-card"
+        >
+          <div class="hero-card-bg hero-card-bg--human" />
+          <img
+            class="dendrite-img"
+            src="@/assets/multimodal.png"
+            alt="human brain"
+          >
+          <div class="hero-card-content">
+            <span class="adventure-text">Explore Human<br>Brain Neurons</span>
+            <div class="arrow-circle">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line
+                  x1="5"
+                  y1="12"
+                  x2="19"
+                  y2="12"
+                />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </div>
+          </div>
+        </a>
+      </div>
     </section>
   </div>
 </template>
@@ -79,7 +113,7 @@ export default class Container extends Vue {
 
 .mouse-content {
   width: 100%;
-  max-width: 720px;
+  max-width: 1100px;
   margin: 0 auto;
   text-align: center;
   padding: 40px 20px;
@@ -100,8 +134,17 @@ export default class Container extends Vue {
   }
 }
 
+/* ── Hero cards row ── */
+.hero-cards-row {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+}
+
 /* ── Hero card ── */
 .hero-card {
+  flex: 1;
+  max-width: 520px;
   position: relative;
   display: flex;
   align-items: center;
@@ -199,5 +242,9 @@ export default class Container extends Vue {
     width: 20px;
     height: 20px;
   }
+}
+
+.hero-card-bg--human {
+  background: linear-gradient(135deg, #f0f8f4 0%, #e8f5ee 40%, #f5fbf7 100%);
 }
 </style>

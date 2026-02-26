@@ -91,6 +91,13 @@ module.exports = {
       title: 'NeuroXiv',
       chunks: ['chunk-vendors', 'chunk-common', 'mouse_t']
     },
+    human: {
+      entry: 'src/pages/human.ts',
+      template: 'public/human.html',
+      filename: 'human.html',
+      title: 'NeuroXiv',
+      chunks: ['chunk-vendors', 'chunk-common', 'human']
+    },
     index: {
       // entry for the page
       entry: 'src/pages/index.ts',
