@@ -321,7 +321,7 @@ function AgenticSearch(loadingTarget: HTMLElement | null, questionJson: { questi
   let originR = r.start.bind(r)
   r.start = () => originR().then((data: any) => {
     console.log(data)
-    return data.data
+    return data
   })
   return r
 }

@@ -95,6 +95,52 @@
               </div>
             </div>
 
+            <!-- Firing Models - collapsible, only shown when SVG content exists -->
+            <div v-if="message.svgs && message.svgs.length > 0" class="collapsible-section">
+              <div
+                class="section-header"
+                @click="toggleSection(index, 'svgs')"
+              >
+                <svg
+                  class="chevron-icon"
+                  :class="{ 'chevron-open': isSectionOpen(index, 'svgs') }"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="section-title">Firing Models</span>
+              </div>
+              <div
+                class="section-body"
+                :class="{
+                  'section-collapsed': !isSectionOpen(index, 'svgs'),
+                  'section-expanded': isSectionOpen(index, 'svgs')
+                }"
+              >
+                <div class="section-content">
+                  <div
+                    v-for="svg in message.svgs"
+                    :key="svg.model_id"
+                    class="svg-item"
+                  >
+                    <div class="svg-label">{{ svg.human_region }} / Neuron {{ svg.neuron_id }}</div>
+                    <div
+                      class="svg-container"
+                      v-html="svg.svg_content"
+                    />
+                  </div>
+                </div>
+                <div
+                  v-if="!isSectionOpen(index, 'svgs')"
+                  class="fade-overlay"
+                  @click="toggleSection(index, 'svgs')"
+                />
+              </div>
+            </div>
+
             <!-- Summary - always visible -->
             <div class="summary-section">
               <div class="section-title-static">Summary</div>
@@ -193,6 +239,13 @@ interface SearchNode {
   children?: SearchNode[]
 }
 
+interface FiringModelSvg {
+  human_region: string
+  neuron_id: string
+  model_id: string
+  svg_content: string | null
+}
+
 interface StructuredMessage {
   text: string
   isUser: Boolean
@@ -201,6 +254,7 @@ interface StructuredMessage {
   reasoningHtml?: string
   evidenceHtml?: string
   summaryHtml?: string
+  svgs?: FiringModelSvg[]
 }
 
 @Component
@@ -284,6 +338,7 @@ export default class AISearchWindow extends Vue {
         const reasoningHtml = data.reasoning_process ? md.render(data.reasoning_process) : ''
         const evidenceHtml = data.evidence_data ? md.render(data.evidence_data) : ''
         const summaryHtml = data.summary ? md.render(data.summary) : ''
+        const svgs: FiringModelSvg[] = (data.firing_model_svgs || []).filter((s: FiringModelSvg) => s.svg_content)
 
         this.messages.push({
           text: '',
@@ -292,7 +347,8 @@ export default class AISearchWindow extends Vue {
           structured: true,
           reasoningHtml,
           evidenceHtml,
-          summaryHtml
+          summaryHtml,
+          svgs
         })
       } else {
         // Generic object, just stringify and render
@@ -724,5 +780,20 @@ pre, code {
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+.svg-item {
+  margin: 8px 0;
+}
+
+.svg-label {
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.svg-container >>> svg {
+  max-width: 100%;
+  height: auto;
 }
 </style>

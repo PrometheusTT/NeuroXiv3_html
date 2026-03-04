@@ -49,7 +49,7 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:5000',
-        pathRewrite: { '^/v2/api': '' },
+        pathRewrite: { '^/v3/api': '' },
         changeOrigin: true
       },
       '/data': {
@@ -59,7 +59,7 @@ module.exports = {
       },
       '/tmp': {
         target: 'http://127.0.0.1:5000',
-        pathRewrite: { '^/v2/tmp': '' },
+        pathRewrite: { '^/v3/tmp': '' },
         changeOrigin: true
       },
       '/socket.io': {
