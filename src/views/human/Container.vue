@@ -149,7 +149,9 @@
       </div>
       <AISearchWindow
         ref="aiSearchWindow"
+        :search-mode="searchMode"
         @AISearch="AISearch"
+        @update:searchMode="searchMode = $event"
       />
       <span
         slot="footer"
@@ -236,7 +238,7 @@ import HeaderBar from '@/components/human/HeaderBar.vue'
 import NeuronList from '@/components/human/NeuronList.vue'
 import NeuronDetail from '@/components/human/NeuronDetail.vue'
 import NeuronSearch from '@/components/human/NeuronSearch.vue'
-import { getNeuronInfo, searchNeurons, searchSimilarNeuron, uploadNeuron, searchROINeuron, AIChat, AI_RAG, getSearchIntent, ArticleSearch, CodeGenerator, executeCode, getSearchCondition, getGeneObj } from '@/request/apis/human/Neuron'
+import { getNeuronInfo, searchNeurons, searchSimilarNeuron, uploadNeuron, searchROINeuron, AIChat, AI_RAG, getSearchIntent, ArticleSearch, CodeGenerator, executeCode, getSearchCondition, getGeneObj, kgCoTAnswer, AgenticSearch } from '@/request/apis/human/Neuron'
 import SmallScreenAlert from '@/components/common/SmallScreenAlert.vue'
 import NeuronLLM from '@/components/human/NeuronLLM.vue'
 import AISearchWindow from '@/components/human/AISearchWindow.vue'
@@ -279,6 +281,7 @@ export default class Container extends Vue {
   private useRawObj: boolean = true;
   private usageExamplesVisible: boolean = false
   private isPreciseSearch:boolean = true
+  private searchMode: 'search' | 'agentic' = 'agentic'
   private firingModelsLoaded: boolean = false
   // 查询示例数据
   public usageExamples = [
@@ -579,10 +582,9 @@ export default class Container extends Vue {
   private async AISearch (func: any = () => {}) {
     console.time('startSearchTime')
     this.aiSearchWindow.sendMessage()
-    let question = this.aiSearchWindow.lastInput
-    let searchIntent = 'unknown intent'
-    let searchConditions = {}
-    searchIntent = 'search'
+    const question = this.aiSearchWindow.lastInput
+    const searchIntent: 'search' | 'agentic' = this.searchMode
+    let searchConditions: Record<string, any> = {}
     if (searchIntent === 'search') {
       const result = await this.nlpHelper.processQuery(question)
       const condition: Record<string, string[]> = {}
@@ -620,6 +622,18 @@ export default class Container extends Vue {
         // this.LLMDialogVisible = false
         this.aiSearchWindow.addResponseFromAPI('I have found ' + neurons.length + ' neurons')
         this.aiSearchWindow.addResponseFromAPI('Data Overview: ' + overview + 'In addition to this report, you can also see graphs of the report in the main window.')
+        func()
+      } catch (e) {
+        this.aiSearchWindow.addResponseFromAPI('There are some issues, please try again later.')
+        console.error(e)
+      }
+    }
+    if (searchIntent === 'agentic') {
+      try {
+        let questionJson = { 'question': question, 'search_mode': searchIntent }
+        const agenticSearchAnswer = await AgenticSearch(document.body, questionJson).start()
+        console.log('agenticSearchAnswer', agenticSearchAnswer)
+        this.aiSearchWindow.addResponseFromAPI(agenticSearchAnswer)
         func()
       } catch (e) {
         this.aiSearchWindow.addResponseFromAPI('There are some issues, please try again later.')

@@ -17,25 +17,163 @@
           class="message-bubble"
           :class="{'user-message': message.isUser, 'system-message': !message.isUser}"
         >
-          <span v-html="message.text" />
-          <button
-            v-if="isPythonCode(message.text)"
-            class="execute-code-btn"
-            @click="executePythonCode(message.text)"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="icon-play"
+          <!-- Structured AIPOM response -->
+          <template v-if="!message.isUser && message.structured">
+            <div class="aipom-label">AIPOM Analysis:</div>
+
+            <!-- Reasoning Process - collapsible with fade preview -->
+            <div class="collapsible-section">
+              <div
+                class="section-header"
+                @click="toggleSection(index, 'reasoning')"
+              >
+                <svg
+                  class="chevron-icon"
+                  :class="{ 'chevron-open': isSectionOpen(index, 'reasoning') }"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="section-title">Reasoning Process</span>
+              </div>
+              <div
+                class="section-body"
+                :class="{
+                  'section-collapsed': !isSectionOpen(index, 'reasoning'),
+                  'section-expanded': isSectionOpen(index, 'reasoning')
+                }"
+              >
+                <div
+                  class="section-content"
+                  v-html="message.reasoningHtml"
+                />
+                <div
+                  v-if="!isSectionOpen(index, 'reasoning')"
+                  class="fade-overlay"
+                  @click="toggleSection(index, 'reasoning')"
+                />
+              </div>
+            </div>
+
+            <!-- Evidence Data - collapsible with fade preview -->
+            <div class="collapsible-section">
+              <div
+                class="section-header"
+                @click="toggleSection(index, 'evidence')"
+              >
+                <svg
+                  class="chevron-icon"
+                  :class="{ 'chevron-open': isSectionOpen(index, 'evidence') }"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="section-title">Evidence Data</span>
+              </div>
+              <div
+                class="section-body"
+                :class="{
+                  'section-collapsed': !isSectionOpen(index, 'evidence'),
+                  'section-expanded': isSectionOpen(index, 'evidence')
+                }"
+              >
+                <div
+                  class="section-content"
+                  v-html="message.evidenceHtml"
+                />
+                <div
+                  v-if="!isSectionOpen(index, 'evidence')"
+                  class="fade-overlay"
+                  @click="toggleSection(index, 'evidence')"
+                />
+              </div>
+            </div>
+
+            <!-- Firing Models - collapsible, only shown when SVG content exists -->
+            <div v-if="message.svgs && message.svgs.length > 0" class="collapsible-section">
+              <div
+                class="section-header"
+                @click="toggleSection(index, 'svgs')"
+              >
+                <svg
+                  class="chevron-icon"
+                  :class="{ 'chevron-open': isSectionOpen(index, 'svgs') }"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="section-title">Firing Models</span>
+              </div>
+              <div
+                class="section-body"
+                :class="{
+                  'section-collapsed': !isSectionOpen(index, 'svgs'),
+                  'section-expanded': isSectionOpen(index, 'svgs')
+                }"
+              >
+                <div class="section-content">
+                  <div
+                    v-for="svg in message.svgs"
+                    :key="svg.model_id"
+                    class="svg-item"
+                  >
+                    <div class="svg-label">{{ svg.human_region }} / Neuron {{ svg.neuron_id }}</div>
+                    <div
+                      class="svg-container"
+                      v-html="svg.svg_content"
+                    />
+                  </div>
+                </div>
+                <div
+                  v-if="!isSectionOpen(index, 'svgs')"
+                  class="fade-overlay"
+                  @click="toggleSection(index, 'svgs')"
+                />
+              </div>
+            </div>
+
+            <!-- Summary - always visible -->
+            <div class="summary-section">
+              <div class="section-title-static">Summary</div>
+              <div
+                class="summary-content"
+                v-html="message.summaryHtml"
+              />
+            </div>
+          </template>
+
+          <!-- Regular messages (plain text / articles / etc.) -->
+          <template v-else>
+            <span v-html="message.text" />
+            <button
+              v-if="isPythonCode(message.text)"
+              class="execute-code-btn"
+              @click="executePythonCode(message.text)"
             >
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="icon-play"
+              >
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            </button>
+          </template>
+
           <div class="message-timestamp">
             {{ message.timestamp }}
           </div>
@@ -48,17 +186,30 @@
         >
       </div>
     </div>
-    <input
-      v-model="userInput"
-      placeholder="[search]:<your query>"
-      class="input-box"
-      @keyup.enter="$emit('AISearch')"
-    >
+    <!-- Agentic Mode toggle above input -->
+    <div class="input-area">
+      <div class="mode-toggle-bar">
+        <el-switch
+          :value="searchMode"
+          active-value="agentic"
+          inactive-value="search"
+          active-text="AIPOM-CoT Mode"
+          @change="$emit('update:searchMode', $event)"
+        />
+      </div>
+      <input
+        v-model="userInput"
+        placeholder="[search]:<your query>"
+        class="input-box"
+        @keyup.enter="$emit('AISearch')"
+      >
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Prop } from 'vue-property-decorator'
+import MarkdownIt from 'markdown-it'
 import searchConditions from './search_conditions.json'
 
 interface Criteria {
@@ -88,13 +239,44 @@ interface SearchNode {
   children?: SearchNode[]
 }
 
+interface FiringModelSvg {
+  human_region: string
+  neuron_id: string
+  model_id: string
+  svg_content: string | null
+}
+
+interface StructuredMessage {
+  text: string
+  isUser: Boolean
+  timestamp: string
+  structured?: boolean
+  reasoningHtml?: string
+  evidenceHtml?: string
+  summaryHtml?: string
+  svgs?: FiringModelSvg[]
+}
+
 @Component
 export default class AISearchWindow extends Vue {
-  public messages: {text: string, isUser: Boolean, timestamp: string}[] = []
+  @Prop({ type: String, default: 'agentic' }) searchMode!: string
+
+  public messages: StructuredMessage[] = []
   private userInput: string = ''
   public lastInput: string = ''
   private Conditions: any = searchConditions.children
   public code: string = ''
+  private expandedSections: { [key: string]: boolean } = {}
+
+  public toggleSection (messageIndex: number, section: string) {
+    const key = `${messageIndex}_${section}`
+    this.$set(this.expandedSections, key, !this.expandedSections[key])
+  }
+
+  public isSectionOpen (messageIndex: number, section: string): boolean {
+    const key = `${messageIndex}_${section}`
+    return !!this.expandedSections[key]
+  }
 
   public scrollToBottom () {
     this.$nextTick(() => {
@@ -138,17 +320,44 @@ export default class AISearchWindow extends Vue {
     return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
   }
 
-  public addResponseFromAPI (data: any) {
+  public async addResponseFromAPI (data: any) {
     const currentTime = new Date()
     const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')
+    const md = new MarkdownIt()
 
     if (typeof data === 'string') {
+      const htmlContent = md.render(data)
       this.messages.push({
-        text: data, isUser: false, timestamp
+        text: htmlContent, isUser: false, timestamp
       })
+    } else if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+      // Structured response with reasoning_process, evidence_data, summary
+      if (data.reasoning_process || data.evidence_data || data.summary) {
+        const reasoningHtml = data.reasoning_process ? md.render(data.reasoning_process) : ''
+        const evidenceHtml = data.evidence_data ? md.render(data.evidence_data) : ''
+        const summaryHtml = data.summary ? md.render(data.summary) : ''
+        const svgs: FiringModelSvg[] = (data.firing_model_svgs || []).filter((s: FiringModelSvg) => s.svg_content)
+
+        this.messages.push({
+          text: '',
+          isUser: false,
+          timestamp,
+          structured: true,
+          reasoningHtml,
+          evidenceHtml,
+          summaryHtml,
+          svgs
+        })
+      } else {
+        // Generic object, just stringify and render
+        const htmlContent = md.render(JSON.stringify(data, null, 2))
+        this.messages.push({
+          text: htmlContent, isUser: false, timestamp
+        })
+      }
     } else if (Array.isArray(data) && data.length > 0) {
       // eslint-disable-next-line camelcase
-      data.forEach((article: { title: string; authors: string;relevance_score: number; related_content: string;summary: string; link: string }, index: number) => {
+      data.forEach((article: { title: string; authors: string; relevance_score: number; related_content: string; summary: string; link: string }, index: number) => {
         let responseMessage = `<span style="font-weight: bold; font-size: larger;">${index + 1}. Article Title:</span> ${article.title}<br>
           <span style="font-weight: bold; font-size: larger;">Authors:</span> ${article.authors}<br>
           <span style="font-weight: bold; font-size: larger;">Relevance Score:</span> ${article.relevance_score}<br>
@@ -160,6 +369,7 @@ export default class AISearchWindow extends Vue {
     } else if (Array.isArray(data) && data.length === 0) {
       this.messages.push({ text: 'No results found.', isUser: false, timestamp })
     }
+    this.scrollToBottom()
   }
 
   public confirmSearch () {
@@ -195,7 +405,6 @@ export default class AISearchWindow extends Vue {
       node.forEach((child) => this.matchConditions(child, words, criteria, question))
     } else {
       if (node.querry_name && !excludedConditions.includes(node.querry_name)) {
-        // 如果包含 "proj" 关键词，并且问题中没有提到 "projection"，则跳过处理
         if (node.querry_name.includes('proj') && !containsProjKeyword) {
           return
         }
@@ -231,7 +440,6 @@ export default class AISearchWindow extends Vue {
           })
         }
 
-        // 确保没有 None 这样的错误值
         if (Array.isArray(criteria[node.querry_name])) {
           criteria[node.querry_name] = criteria[node.querry_name].filter((value: any) => value !== null)
           if (criteria[node.querry_name].length === 0) {
@@ -264,7 +472,6 @@ export default class AISearchWindow extends Vue {
   flex-direction: column;
   max-height: 90vh;
   min-height: 300px;
-  overflow: hidden;
 }
 
 .chat-messages {
@@ -282,6 +489,7 @@ export default class AISearchWindow extends Vue {
   padding: 10px 20px;
   display: inline-block;
   max-width: 70%;
+  position: relative;
 }
 
 .user-message {
@@ -300,15 +508,187 @@ export default class AISearchWindow extends Vue {
   margin-left: 20px;
 }
 
-input {
+/* Input area with mode toggle */
+.input-area {
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 10px 20px;
+}
+
+.mode-toggle-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 0 4px 0;
+}
+
+.input-box {
   padding: 12px 20px;
   border-radius: 30px;
   border: 2px solid #007bff;
-  margin: 10px 20px;
-  width: calc(100% - 40px);
+  width: 100%;
   box-sizing: border-box;
+  outline: none;
+  margin-top: 6px;
 }
 
+/* Collapsible sections */
+.collapsible-section {
+  margin: 8px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.03);
+  transition: background 0.2s;
+}
+
+.section-header:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.chevron-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  color: #666;
+}
+
+.chevron-open {
+  transform: rotate(90deg);
+}
+
+.section-title {
+  font-weight: bold;
+  font-size: 0.95em;
+  color: #333;
+}
+
+.section-body {
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.section-collapsed {
+  max-height: 100px;
+}
+
+.section-expanded {
+  max-height: none;
+}
+
+.section-content {
+  padding: 8px 12px 12px 12px;
+  font-size: 0.88em;
+  line-height: 1.5;
+  color: #444;
+}
+
+.section-content >>> table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 0.85em;
+}
+
+.section-content >>> th,
+.section-content >>> td {
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.section-content >>> th {
+  background: rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+}
+
+/* Fade overlay for collapsed state - semi-transparent peek */
+.fade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    rgba(225, 225, 225, 0) 0%,
+    rgba(225, 225, 225, 0.6) 40%,
+    rgba(225, 225, 225, 0.95) 100%
+  );
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 6px;
+}
+
+.fade-overlay::after {
+  content: 'Click to expand';
+  font-size: 0.75em;
+  color: #007bff;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.fade-overlay:hover::after {
+  opacity: 1;
+}
+
+/* Summary section */
+.summary-section {
+  margin: 8px 0 4px 0;
+  padding: 0 4px;
+}
+
+.section-title-static {
+  font-weight: bold;
+  font-size: 0.95em;
+  color: #333;
+  margin-bottom: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.summary-content {
+  font-size: 0.92em;
+  line-height: 1.6;
+  color: #222;
+}
+
+.summary-content >>> table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 0.9em;
+}
+
+.summary-content >>> th,
+.summary-content >>> td {
+  border: 1px solid #ddd;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.aipom-label {
+  font-size: 0.8em;
+  color: #888;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+/* Scrollbar */
 .chat-messages::-webkit-scrollbar {
   width: 8px;
 }
@@ -390,11 +770,6 @@ input {
   transform: scale(0.9);
 }
 
-.message-bubble {
-  position: relative;
-  padding: 10px 10px 10px 10px;
-}
-
 pre, code {
   background-color: #f4f4f4;
   border: 1px solid #ddd;
@@ -404,376 +779,19 @@ pre, code {
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+.svg-item {
+  margin: 8px 0;
+}
+
+.svg-label {
+  font-size: 0.8em;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.svg-container >>> svg {
+  max-width: 100%;
+  height: auto;
+}
 </style>
-<!--<template>-->
-<!--  <div class="chat-window">-->
-<!--    <div class="chat-messages">-->
-<!--      <div-->
-<!--        v-for="(message, index) in messages"-->
-<!--        :key="index"-->
-<!--        class="message-container"-->
-<!--        :class="{'user-message-container': message.isUser, 'system-message-container': !message.isUser}"-->
-<!--      >-->
-<!--        <img-->
-<!--          v-if="!message.isUser"-->
-<!--          src="../../../public/img/AIPOM.png"-->
-<!--          alt="System Avatar"-->
-<!--          class="avatar system-avatar"-->
-<!--        >-->
-<!--        <div-->
-<!--          class="message-bubble"-->
-<!--          :class="{'user-message': message.isUser, 'system-message': !message.isUser}"-->
-<!--        >-->
-<!--          <span v-html="message.text" />-->
-<!--          <button-->
-<!--            v-if="isPythonCode(message.text)"-->
-<!--            class="execute-code-btn"-->
-<!--            @click="executePythonCode(message.text)"-->
-<!--          >-->
-<!--            <svg-->
-<!--              xmlns="http://www.w3.org/2000/svg"-->
-<!--              viewBox="0 0 24 24"-->
-<!--              fill="none"-->
-<!--              stroke="currentColor"-->
-<!--              stroke-width="2"-->
-<!--              stroke-linecap="round"-->
-<!--              stroke-linejoin="round"-->
-<!--              class="icon-play"-->
-<!--            >-->
-<!--              <polygon points="5 3 19 12 5 21 5 3" />-->
-<!--            </svg>-->
-<!--          </button>-->
-<!--          <div class="message-timestamp">-->
-<!--            {{ message.timestamp }}-->
-<!--          </div> &lt;!&ndash; 时间戳 &ndash;&gt;-->
-<!--        </div>-->
-<!--        <img-->
-<!--          v-if="message.isUser"-->
-<!--          src="../../../public/img/User.png"-->
-<!--          alt="User Avatar"-->
-<!--          class="avatar user-avatar"-->
-<!--        >-->
-<!--      </div>-->
-<!--    </div>-->
-<!--    <input-->
-<!--      v-model="userInput"-->
-<!--      placeholder="Type a message..."-->
-<!--      class="input-box"-->
-<!--      @keyup.enter="$emit('AISearch')"-->
-<!--    >-->
-<!--  </div>-->
-<!--</template>-->
-
-<!--<script lang="ts">-->
-
-<!--import { Component, Vue } from 'vue-property-decorator'-->
-<!--import searchConditions from './search_conditions.json'-->
-<!--@Component-->
-
-<!--export default class AISearchWindow extends Vue {-->
-<!--  public messages: {text: string, isUser: Boolean, timestamp: string}[] = []-->
-<!--  private userInput: string = ''-->
-<!--  public lastInput: string = ''-->
-<!--  private Conditions: any[] = searchConditions.children-->
-<!--  public code:string = ''-->
-
-<!--  public scrollToBottom () {-->
-<!--    this.$nextTick(() => {-->
-<!--      const container = this.$el.querySelector('.chat-messages')-->
-<!--      if (container) { // 检查 container 是否为 null-->
-<!--        container.scrollTop = container.scrollHeight-->
-<!--      }-->
-<!--    })-->
-<!--  }-->
-
-<!--  public sendMessage () {-->
-<!--    const userMessage = this.userInput-->
-<!--    if (userMessage) {-->
-<!--      const currentTime = new Date() // 获取当前时间-->
-<!--      // 格式化时间为 HH:MM 格式-->
-<!--      const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')-->
-
-<!--      this.messages.push({-->
-<!--        text: userMessage,-->
-<!--        isUser: true,-->
-<!--        timestamp: timestamp // 添加时间戳属性-->
-<!--      })-->
-<!--      this.lastInput = userMessage-->
-<!--      this.userInput = ''-->
-<!--      // this.addResponseFromAPI(userMessage)-->
-<!--      this.scrollToBottom()-->
-<!--    }-->
-<!--  }-->
-<!--  public setCode (code: string) {-->
-<!--    this.code = code-->
-<!--  }-->
-
-<!--  public isPythonCode (text: string): boolean {-->
-<!--    return text.trim().includes('import')-->
-<!--  }-->
-
-<!--  public async executePythonCode (code: string) {-->
-<!--    this.$emit('executeCode')-->
-<!--  }-->
-
-<!--  formatTimestamp (date: Date): string {-->
-<!--    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`-->
-<!--  }-->
-
-<!--  // public addResponseFromAPI (Response: string) {-->
-<!--  //   // Simulate a response from an API (replace with your actual API call)-->
-<!--  //   if (Response !== this.lastInput) {-->
-<!--  //     const responseMessage = 'SEU-Allen: ' + Response-->
-<!--  //     const currentTime = new Date() // 获取当前时间-->
-<!--  //     // 格式化时间为 HH:MM 格式-->
-<!--  //     const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')-->
-<!--  //     this.messages.push({ text: responseMessage, isUser: false, timestamp: timestamp })-->
-<!--  //   }-->
-<!--  // }-->
-
-<!--  public addResponseFromAPI (data: any) {-->
-<!--    // 获取当前时间戳-->
-<!--    const currentTime = new Date() // 获取当前时间-->
-<!--    //     // 格式化时间为 HH:MM 格式-->
-<!--    const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')-->
-
-<!--    // 如果传入的是字符串（原有需求）-->
-<!--    if (typeof data === 'string') {-->
-<!--      this.messages.push({-->
-<!--        text: data, isUser: false, timestamp-->
-<!--      })-->
-<!--      // eslint-disable-next-line brace-style-->
-<!--    }-->
-<!--    // 如果传入的是对象数组（新需求）-->
-<!--    else if (Array.isArray(data) && data.length > 0) {-->
-<!--      data.forEach((article: { title: string; summary: string; link: string }, index: number) => {-->
-<!--        let responseMessage = `<span style="font-weight: bold; font-size: larger;">${index + 1}. Article Title:</span> ${article.title}<br>-->
-<!--  <span style="font-weight: bold; font-size: larger;">Summary:</span> ${article.summary}<br>-->
-<!--  <span style="font-weight: bold; font-size: larger;">Link:</span> <a href="${article.link}" target="_blank" style="text-decoration: underline; color: #007bff">${article.link}</a>`-->
-<!--        this.messages.push({ text: responseMessage, isUser: false, timestamp })-->
-<!--      })-->
-<!--      // eslint-disable-next-line brace-style-->
-<!--    }-->
-<!--    // 如果数组为空，表示没有搜索到结果-->
-<!--    else if (Array.isArray(data) && data.length === 0) {-->
-<!--      this.messages.push({ text: 'No results found.', isUser: false, timestamp })-->
-<!--    }-->
-<!--  }-->
-<!--  public confirmSearch () {-->
-<!--    this.$emit('AISearch')-->
-<!--  }-->
-
-<!--  public GetIntent (question: string) {-->
-<!--    if (!this.Conditions) return-->
-
-<!--    let criteria: any = {}-->
-<!--    const words = question.trim().split(/\s+/)-->
-
-<!--    // 遍历 JSON 文件并匹配条件-->
-<!--    this.matchConditions(this.Conditions, words, criteria, question.toLowerCase())-->
-
-<!--    return criteria-->
-<!--  }-->
-
-<!--  public matchConditions (node: any, words: string[], criteria: any, question: string) {-->
-<!--    if (!node) return-->
-
-<!--    if (Array.isArray(node)) {-->
-<!--      node.forEach((child) => this.matchConditions(child, words, criteria, question))-->
-<!--    } else {-->
-<!--      if (node.querry_name) {-->
-<!--        // 检查是否匹配querry_name（包含关系，不区分大小写）-->
-<!--        const querryNameKeyword = node.querry_name.toLowerCase()-->
-<!--        if (words.some(word => querryNameKeyword.includes(word.toLowerCase()))) {-->
-<!--          // 检查数值型条件-->
-<!--          const numberRangeRegex = /\[(\d+(\.\d+)?),\s*(\d+(\.\d+)?)\]/-->
-<!--          const match = question.match(numberRangeRegex)-->
-<!--          if (match) {-->
-<!--            const value = [parseFloat(match[1]), parseFloat(match[3])]-->
-<!--            criteria[node.querry_name] = value-->
-<!--          } else if (node.default) {-->
-<!--            criteria[node.querry_name] = node.default-->
-<!--          } else {-->
-<!--            criteria[node.querry_name] = true-->
-<!--          }-->
-<!--        }-->
-
-<!--        // 检查candidates列表中的每个候选词-->
-<!--        if (Array.isArray(node.candidates)) {-->
-<!--          words.forEach((word) => {-->
-<!--            node.candidates.forEach((candidate: any) => {-->
-<!--              if (typeof candidate === 'string' && word.toLowerCase() === candidate.toLowerCase()) {-->
-<!--                if (!criteria[node.querry_name]) {-->
-<!--                  criteria[node.querry_name] = []-->
-<!--                }-->
-<!--                if (!criteria[node.querry_name].includes(candidate)) {-->
-<!--                  criteria[node.querry_name].push(candidate)-->
-<!--                }-->
-<!--              }-->
-<!--            })-->
-<!--          })-->
-<!--        }-->
-<!--      }-->
-<!--      if (node.children) {-->
-<!--        this.matchConditions(node.children, words, criteria, question)-->
-<!--      }-->
-<!--    }-->
-<!--  }-->
-<!--}-->
-<!--</script>-->
-
-<!--<style scoped>-->
-<!--.chat-window {-->
-<!--  width: 100%; /* 聊天窗口宽度自适应父元素 */-->
-<!--  max-width: 768px; /* 控制最大宽度 */-->
-<!--  border-radius: 16px; /* 圆角边框 */-->
-<!--  overflow: hidden; /* 防止子元素溢出边框 */-->
-<!--  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 更轻的阴影，增加立体感 */-->
-<!--  background: #ffffff; /* 纯白背景 */-->
-<!--  margin: auto; /* 居中显示 */-->
-<!--  display: flex;-->
-<!--  flex-direction: column; /* 垂直布局 */-->
-<!--  max-height: 90vh; /* 最大高度不超过视口的90% */-->
-<!--  min-height: 300px; /* 最小高度 */-->
-<!--  overflow: hidden; /* 内容溢出时隐藏 */-->
-<!--}-->
-
-<!--.chat-messages {-->
-<!--  flex: 1; /* 让消息列表填充所有可用空间 */-->
-<!--  padding: 20px; /* 增加内部间距 */-->
-<!--  background: #f7f7f7; /* 淡灰色背景 */-->
-<!--  overflow-y: auto; /* 自动显示滚动条 */-->
-<!--}-->
-
-<!--.message-bubble {-->
-<!--  background: #e1e1e1; /* 统一气泡背景色 */-->
-<!--  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 轻微阴影 */-->
-<!--  border-radius: 20px; /* 圆角 */-->
-<!--  margin: 4px 0; /* 消息间距 */-->
-<!--  padding: 10px 20px; /* 内边距 */-->
-<!--  display: inline-block; /* 保证气泡根据内容扩展 */-->
-<!--  max-width: 70%; /* 控制气泡宽度 */-->
-<!--}-->
-
-<!--.user-message {-->
-<!--  background: #007bff; /* 用户消息颜色 */-->
-<!--  color: white; /* 用户消息文字颜色 */-->
-<!--  float: right; /* 靠右浮动 */-->
-<!--  clear: both; /* 避免相邻元素的浮动 */-->
-<!--  margin-right: 20px; /* 与窗口边缘的间距 */-->
-<!--}-->
-
-<!--.system-message {-->
-<!--  background: #e1e1e1; /* 系统消息颜色 */-->
-<!--  color: black; /* 系统消息文字颜色 */-->
-<!--  float: left; /* 靠左浮动 */-->
-<!--  clear: both; /* 避免相邻元素的浮动 */-->
-<!--  margin-left: 20px; /* 与窗口边缘的间距 */-->
-<!--}-->
-
-<!--input {-->
-<!--  padding: 12px 20px; /* 输入框内边距 */-->
-<!--  border-radius: 30px; /* 圆角边框 */-->
-<!--  border: 2px solid #007bff; /* 边框颜色与用户消息气泡一致 */-->
-<!--  margin: 10px 20px; /* 边距 */-->
-<!--  width: calc(100% - 40px); /* 输入框宽度 */-->
-<!--  box-sizing: border-box; /* 边框盒模型 */-->
-<!--}-->
-
-<!--/* 自适应滚动条样式 */-->
-<!--.chat-messages::-webkit-scrollbar {-->
-<!--  width: 8px;-->
-<!--}-->
-
-<!--.chat-messages::-webkit-scrollbar-track {-->
-<!--  background: #f0f0f0;-->
-<!--  border-radius: 10px; /* 圆角滚动条 */-->
-<!--}-->
-
-<!--.chat-messages::-webkit-scrollbar-thumb {-->
-<!--  background: #bbb;-->
-<!--  border-radius: 10px;-->
-<!--}-->
-<!--/* 时间戳样式 */-->
-<!--.message-timestamp {-->
-<!--  font-size: 0.75em;-->
-<!--  margin-top: 5px;-->
-<!--  color: #999;-->
-<!--  text-align: right;-->
-<!--}-->
-<!--.avatar {-->
-<!--    width: 40px; /* 设置头像宽度 */-->
-<!--    height: 40px; /* 设置头像高度 */-->
-<!--    border-radius: 50%; /* 圆形头像 */-->
-<!--    object-fit: cover; /* 保持图片比例 */-->
-<!--    margin: 4px; /* 头像与气泡间隔 */-->
-<!--}-->
-
-<!--.user-avatar {-->
-<!--    float: right; /* 用户头像靠右 */-->
-<!--}-->
-
-<!--.system-avatar {-->
-<!--    float: left; /* 系统头像靠左 */-->
-<!--}-->
-
-<!--.message-container {-->
-<!--    display: flex;-->
-<!--    align-items: flex-start; /* 对齐到底部 */-->
-<!--    clear: both; /* 清除浮动 */-->
-<!--}-->
-
-<!--.user-message-container {-->
-<!--    justify-content: flex-end; /* 用户气泡靠右 */-->
-<!--}-->
-
-<!--.system-message-container {-->
-<!--    justify-content: flex-start; /* 系统气泡靠左 */-->
-<!--}-->
-
-<!--.execute-code-btn {-->
-<!--    background-color: #007bff; /* Primary color */-->
-<!--    border: none; /* No border */-->
-<!--    border-radius: 50%; /* Circle shape */-->
-<!--    width: 30px; /* Diameter of the button */-->
-<!--    height: 30px; /* Diameter of the button */-->
-<!--    cursor: pointer;-->
-<!--    display: flex;-->
-<!--    justify-content: center;-->
-<!--    align-items: center;-->
-<!--    right: 10px;-->
-<!--    bottom: 10px;-->
-<!--    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */-->
-<!--    transition: background-color 0.2s, transform 0.2s; /* Smooth transitions for feedback */-->
-<!--}-->
-
-<!--.icon-play {-->
-<!--    fill: white; /* Icon color contrast */-->
-<!--    width: 20px; /* Icon size */-->
-<!--    height: 20px; /* Icon size */-->
-<!--}-->
-
-<!--.execute-code-btn:hover {-->
-<!--    background-color: #0056b3; /* Darker shade on hover */-->
-<!--}-->
-
-<!--.execute-code-btn:active {-->
-<!--    transform: scale(0.9); /* Slightly shrink the button when clicked */-->
-<!--}-->
-
-<!--.message-bubble {-->
-<!--    position: relative; /* Needed for absolute positioning of the button */-->
-<!--    padding: 10px 10px 10px 10px ; /* Adjust padding to give space for the button */-->
-<!--}-->
-
-<!--pre, code {-->
-<!--  background-color: #f4f4f4; /* 浅灰色背景，突出显示代码区域 */-->
-<!--  border: 1px solid #ddd; /* 边框 */-->
-<!--  border-radius: 5px; /* 圆角边框 */-->
-<!--  padding: 10px; /* 内边距 */-->
-<!--  overflow: auto; /* 超长代码滚动 */-->
-<!--  white-space: pre-wrap; /* 保持空白符 */-->
-<!--  word-break: break-all; /* 单词断行 */-->
-<!--}-->
-<!--</style>-->
-

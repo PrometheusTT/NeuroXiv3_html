@@ -287,4 +287,43 @@ function searchROINeuron (loadingTarget: HTMLElement | null, roiParameter: strin
   return r
 }
 
-export { searchNeurons, getNeuronInfo, uploadNeuron, searchSimilarNeuron, searchROINeuron, AIChat, AI_RAG, getSearchIntent, ArticleSearch, CodeGenerator, executeCode, getSearchCondition, getGeneObj }
+function kgCoTAnswer(loadingTarget: HTMLElement | null, questionJson: { question: string }, requestOptions: RequestOptions = {}) {
+  const url = `${REQUEST_NAME_SPACE}kg_cot_answer`
+  const options: RequestInit = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(questionJson)
+  }
+  requestOptions.errorMsg = requestOptions.errorMsg || 'get kg cot answer error'
+  const params = { url, loadingTarget, options, ...requestOptions }
+  let r = request(params)
+  let originR = r.start.bind(r)
+  r.start = () => originR().then((data: any) => {
+    return data.answer
+  })
+  return r
+}
+
+function AgenticSearch(loadingTarget: HTMLElement | null, questionJson: { question: string }, requestOptions: RequestOptions = {}) {
+  const url = `${REQUEST_NAME_SPACE}agentic_search`
+  const options: RequestInit = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(questionJson)
+  }
+  requestOptions.errorMsg = requestOptions.errorMsg || 'get agentic search answer error'
+  const params = { url, loadingTarget, options, ...requestOptions }
+  let r = request(params)
+  let originR = r.start.bind(r)
+  r.start = () => originR().then((data: any) => {
+    console.log(data)
+    return data
+  })
+  return r
+}
+
+export { searchNeurons, getNeuronInfo, uploadNeuron, searchSimilarNeuron, searchROINeuron, AIChat, AI_RAG, getSearchIntent, ArticleSearch, CodeGenerator, executeCode, getSearchCondition, getGeneObj, kgCoTAnswer, AgenticSearch }
