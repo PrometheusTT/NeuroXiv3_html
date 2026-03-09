@@ -242,7 +242,7 @@ import NeuronLLM from '@/components/human/NeuronLLM.vue'
 import AISearchWindow from '@/components/human/AISearchWindow.vue'
 import { result } from 'lodash'
 import NeuronLists from '@/components/human/NeuronLists.vue'
-import { getCachedData, setCachedData, deleteCachedData } from '@/utils/indexedDB'
+import { getCachedData, setCachedData, deleteCachedData, clearAllCache } from '@/utils/indexedDB'
 import NlpHelper from '@/utils/nlpHelper'
 
 @Component({
@@ -466,7 +466,9 @@ export default class Container extends Vue {
     const cachedData = await getCachedData(cacheKey)
     if (cachedData) {
       const currentTime = new Date().getTime()
-      if (currentTime - cachedData.timestamp < CACHE_DURATION) {
+      // Invalidate cache if neurons have empty img_src (stale data)
+      const hasStaleImgSrc = cachedData.neurons && cachedData.neurons.some((n: any) => !n.img_src)
+      if (!hasStaleImgSrc && currentTime - cachedData.timestamp < CACHE_DURATION) {
         // eslint-disable-next-line camelcase
         const { neurons, basic_info, morpho_info, plot, proj_info } = cachedData
         this.neuronsList = neurons
@@ -474,7 +476,7 @@ export default class Container extends Vue {
         func()
         return
       } else {
-        await deleteCachedData(cacheKey) // 缓存过期，移除缓存
+        await deleteCachedData(cacheKey) // 缓存过期或数据不完整，移除缓存
       }
     }
 
@@ -1192,8 +1194,17 @@ export default class Container extends Vue {
     }
   }
   mounted () {
+    // Clear stale IndexedDB cache once (img_src fix)
+    const CACHE_VERSION_KEY = 'neuroxiv3_cache_version'
+    const CURRENT_CACHE_VERSION = '2'
+    if (localStorage.getItem(CACHE_VERSION_KEY) !== CURRENT_CACHE_VERSION) {
+      clearAllCache().then(() => {
+        localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION)
+        console.log('Cleared stale neuron cache')
+      })
+    }
     setTimeout(async () => {
-      console.log('Cache update test: Version 1.1.0')
+      console.log('Cache update test: Version 1.2.0')
       console.log('----------route----------', this.$route.query)
 
       // 检查是否存在 `id` 参数

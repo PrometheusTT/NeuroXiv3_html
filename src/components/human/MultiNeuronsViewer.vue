@@ -146,12 +146,11 @@
                 >
                   <template #default="{ node, data }">
                     <span class="custom-tree-node">
-                      <!-- 使用flex布局让文字和图标保持在同一行 -->
                       <span :style="{ color: data.color || '#333' }">
                         {{ data.label }}
                       </span>
+                      <button style="margin-left: 8px;">info</button>
                     </span>
-                    <button> info</button>
                   </template>
                 </el-tree>
                 <div class="search-container">
@@ -223,8 +222,8 @@ export default class NeuronInfo extends Vue {
   @Ref('ROI') ROI!: ROI
   @Ref('brainTree') brainTree!: any
   @Ref('geneTree') geneTree!: any
-  public neuronViewerData: any = this.$store.state.atlas === 'CCFv3' ? neuronViewerBaseData : neuronViewerBaseDataFMost // neuronViewerBaseData
-  private rootId: number = this.$store.state.atlas === 'CCFv3' ? rootId : rootIdFMost // rootId
+  public neuronViewerData: any = neuronViewerBaseData
+  private rootId: number = rootId
   private sliceAtlas: any = this.$store.state.atlas
   private activeNames: any = ['brain']
   private sagittalMax: number = 11375 // 18.20

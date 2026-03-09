@@ -29,3 +29,8 @@ export const deleteCachedData = async (key: string) => {
   return db.delete(STORE_NAME, key)
 }
 
+export const clearAllCache = async () => {
+  const db = await initDB()
+  return db.clear(STORE_NAME)
+}
+

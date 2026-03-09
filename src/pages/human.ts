@@ -21,7 +21,9 @@ async function checkVersion () {
   try {
     const response = await fetch('/version.txt', { cache: 'no-cache' })
     const text = await response.text()
-    const remoteVersion = text.split(': ')[1].trim()
+    const parts = text.split(': ')
+    if (!parts[1]) return
+    const remoteVersion = parts[1].trim()
     console.log('current remote version: ' + remoteVersion)
     const localVersion = localStorage.getItem('app-version')
     console.log('current local version: ' + localVersion)

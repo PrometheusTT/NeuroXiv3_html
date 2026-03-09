@@ -137,8 +137,8 @@ export default class NeuronScene extends Vue {
   public loadedObj:any = null
 
   VIEW_TRANSFORMATIONS: any = {
-    'front': new THREE.Vector3(-1, 0, 0), // Z轴正向朝向观察者
-    'side': new THREE.Vector3(0, 0, 1), // X轴正向朝向观察者
+    'front': new THREE.Vector3(0, 0, 1), // 正面视图
+    'side': new THREE.Vector3(-1, 0, 0), // 侧面视图
     'top': new THREE.Vector3(0, 1, 0) // Y轴正向朝向观察者
   }
   public setView (viewName: string) {
