@@ -123,7 +123,7 @@
             </div>
           </el-tooltip>
           <el-tooltip
-            :content="isPreciseSearch ? 'Search neuron based on exactly matching of CCFv3 ontology' : 'Search neuron based on fuzzy matching of CCFv3 ontology'"
+            :content="isPreciseSearch ? 'Search neuron based on exactly matching of human brain region' : 'Search neuron based on fuzzy matching of human brain region'"
             placement="top"
             style="margin-left: 20px"
           >
@@ -136,7 +136,7 @@
         </div>
         <!-- 描述内容 -->
         <div style="font-size: 14px; margin-top: 14px; color: gray;">
-          You are viewing an AWS-compromised AIPOM. You can search for neurons using natural language, such as: 'search MOp neurons from SEU-ALLEN.' Due to limitations on AWS servers, many AI features are only accessible through a customized deployment of NeuroXiv on dedicated servers. Click the '?' button for more details. Contact us if you have any questions.
+          You are viewing the Human Brain neuron database. You can search for neurons using natural language, such as: 'search SFG neurons' or 'search female neurons in MTG.' Click the '?' button for more details. Contact us if you have any questions.
         </div>
       </template>
       <div
@@ -174,7 +174,7 @@
     >
       <div style="max-height: 60vh; overflow-y: auto;">
         <p style="font-size: 16px; margin-bottom: 10px;">
-          You can search for neurons based on an exact match with the Allen Mouse Brain Common Coordinate Framework Version 3 (CCFv3) ontology when the "Precise Search" option is turned on, and perform a fuzzy search based on the CCFv3 ontology when the option is turned off. Enabling the "Precise Search" option means users need to use the full names as defined in the CCFv3 for each brain region. Of course, we have also included other full names commonly used by researchers.  When the "Precise Search" option is turned off, users don't need to be overly concerned with the completeness of the expression and the order of words. However, please note that some inaccuracies may occur in the latter case.
+          You can search for human neurons by brain region (SFG, MFG, IFG, STG, MTG, ITG, TP, SPL, SPG, RFL, ROL, OL), gender (Male/Female), and morphological feature ranges. Use the search dialog for structured queries or the natural language search above. The dataset contains 8,397 human neurons with 32 morphological features.
         </p>
 
         <!-- 副标题 -->
@@ -280,33 +280,12 @@ export default class Container extends Vue {
   private isPreciseSearch:boolean = true
   // 查询示例数据
   public usageExamples = [
-    'Search/Find/Look for/Show neurons with/without apical dendrite.',
-    'Search/Find/Look for/Show neurons that have/don’t have apical dendrite.',
-    'Search/Find/Look for/Show neurons with/without dendrite.',
-    'Search/Find/Look for/Show neurons that have/don’t have dendrite.',
-    'Search/Find/Look for/Show neurons with/without axon.',
-    'Search/Find/Look for/Show neurons that have/don’t have axon.',
-    'Do neurons with/without apical dendrite exist?',
-    'Do neurons that have/don’t have apical dendrite exist?',
-    'Are there neurons with/without apical dendrite?',
-    'Are there neurons that have/don’t have apical dendrite?',
-    'Do neurons with/without dendrite exist?',
-    'Do neurons that have/don’t have dendrite exist?',
-    'Are there neurons with/without dendrite?',
-    'Are there neurons that have/don’t have dendrite?',
-    'Do neurons with/without axon exist?',
-    'Do neurons that have/don’t have axon exist?',
-    'Are there neurons with/without axon?',
-    'Are there neurons that have/don’t have axon?',
-    'Search neurons that project/extend/elongate to [region/area].',
-    'Search neurons with projection/extension/elongation to [region/area].',
-    'Search neurons that arborize/extend/elongate/traverse in [region/area].',
-    'Search neurons with arborization/extensions/elongation/traversal in [region/area].',
-    'Search neurons that project/arborize/extend/elongate/traverse into [region/area].',
-    'Search neurons with projection/arborization/extension/elongation/traversal into [region/area].',
-    'Search neurons that project/arborize/extend/elongate/traverse toward [region/area].',
-    'Search neurons with projection/arborization/extensions/elongation/traversal toward [region/area].',
-    'Search neurons involved in [functions]'
+    ‘Search neurons in SFG (Superior Frontal Gyrus).’,
+    ‘Search neurons in MTG (Middle Temporal Gyrus).’,
+    ‘Search female neurons in IFG.’,
+    ‘Search male neurons in STG.’,
+    ‘Show all neurons from the Temporal Pole (TP).’,
+    ‘Find neurons in the Superior Parietal Lobule (SPL).’
   ];
   public supportedFeatures = ['Feeling', 'Emotion', 'Motion', 'Attention', 'Memory', 'Cognition', 'Behavior', 'Learning', 'Perception', 'Hearing', 'Metabolism', 'Smell', 'Vision', 'Taste', 'Regulation', 'Sleeping', 'Supporting', 'Eating', 'Pronunciation', 'Visceral activity', 'Coordination', 'Individual survival', 'Racial reproduction', 'Pressure', 'Awareness', 'Regulation of circadian rhythm', 'Secretion activity', 'Water electrolyte balance', 'Drinking', 'Weight', 'Blood sugar balance', 'Temperature', 'Endocrine activity', 'Body balance', 'Eye movements', 'Deliver information', 'Adjusting the core', 'Facial expression', 'Masticatory muscle movement', 'Breathing', 'Cardiovascular activity', 'Digestion', 'Immunity', 'Lingual muscle movement'];
 
@@ -334,22 +313,25 @@ export default class Container extends Vue {
     this.neuronDetail.neuronInfo.isUploadData = false
     await this.$nextTick()
     const needClear = !!this.neuronDetail.neuronInfo.neuronInfoData.id
-    const neuronInfo = await getNeuronInfo(document.body, neuronDetail.id, this.$store.state.atlas).start()
-    // console.log(neuronInfo)
+    const neuronInfo = await getNeuronInfo(document.body, neuronDetail.id, 'Human').start()
     this.neuronDetail.neuronInfo.neuronInfoData = neuronInfo
-    if (this.neuronDetail.neuronInfo.roiShown) {
-      this.neuronDetail.neuronInfo.ROI.setROI(Math.round(neuronInfo.soma[0]), Math.round(neuronInfo.soma[1]), Math.round(neuronInfo.soma[2]))
+    // Human neurons may not have soma coordinates or viewer_info
+    if (neuronInfo.soma && neuronInfo.soma.length >= 3) {
+      if (this.neuronDetail.neuronInfo.roiShown) {
+        this.neuronDetail.neuronInfo.ROI.setROI(Math.round(neuronInfo.soma[0]), Math.round(neuronInfo.soma[1]), Math.round(neuronInfo.soma[2]))
+      }
+      if (this.neuronDetail.neuronInfo.somaShown) {
+        this.neuronDetail.neuronInfo.Soma.setSoma(Math.round(neuronInfo.soma[0]), Math.round(neuronInfo.soma[1]), Math.round(neuronInfo.soma[2]))
+      }
     }
-    if (this.neuronDetail.neuronInfo.somaShown) {
-      this.neuronDetail.neuronInfo.Soma.setSoma(Math.round(neuronInfo.soma[0]), Math.round(neuronInfo.soma[1]), Math.round(neuronInfo.soma[2]))
+    if (neuronInfo.viewer_info && neuronInfo.viewer_info.length > 0) {
+      this.neuronDetail.neuronInfo.neuronViewerReconstructionData = neuronInfo.viewer_info
+      await this.neuronDetail.neuronInfo.updateReconstruction(needClear)
+      await this.$nextTick()
+      if (neuronInfo.soma && neuronInfo.soma.length >= 3) {
+        this.neuronDetail.neuronInfo.showSoma(100)
+      }
     }
-    // this.neuronDetail.neuronInfo.showSoma(100)
-    // console.log('soma loaded')
-    // this.neuronDetail.neuronInfo.neuronScene.updateSomaBall(Math.round(neuronInfo.soma[0]), Math.round(neuronInfo.soma[1]), Math.round(neuronInfo.soma[2]), 100)
-    this.neuronDetail.neuronInfo.neuronViewerReconstructionData = neuronInfo.viewer_info
-    await this.neuronDetail.neuronInfo.updateReconstruction(needClear)
-    await this.$nextTick()
-    this.neuronDetail.neuronInfo.showSoma(100)
   }
   /**
      * 更新当前显示的 neuron info 信息
@@ -401,7 +383,7 @@ export default class Container extends Vue {
       this.neuronDetail.selectedTab = 'neuronStates'
       this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
       await this.$nextTick()
-      this.neuronDetail.neuronStates.featurePlot.renderChart()
+      this.neuronDetail.neuronStates.featurePlot && this.neuronDetail.neuronStates.featurePlot.renderChart()
       this.neuronDetail.neuronStates.histogramBars.renderChart()
       if (updateNeuronList) {
         this.neuronList.setListData(neurons)
@@ -435,7 +417,7 @@ export default class Container extends Vue {
   //     this.neuronDetail.selectedTab = 'neuronStates'
   //     this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
   //     await this.$nextTick()
-  //     this.neuronDetail.neuronStates.featurePlot.renderChart()
+  //     this.neuronDetail.neuronStates.featurePlot && this.neuronDetail.neuronStates.featurePlot.renderChart()
   //     this.neuronDetail.neuronStates.histogramBars.renderChart()
   //     this.searchDialogVisible = false
   //     this.neuronList.setListData(neurons)
@@ -451,7 +433,7 @@ export default class Container extends Vue {
     if (!criteria) {
       criteria = this.neuronSearch.getSearchCriteria()
     }
-    criteria['brain_atlas'] = [this.$store.state.atlas]
+    criteria['species'] = ['Human']
     const condition = ids ? { id_list: ids } : { criteria: criteria }
 
     const cacheKey = ids ? `neurons_ids_${ids.join('_')}` : `neurons_criteria_${JSON.stringify(criteria)}`
@@ -504,7 +486,7 @@ export default class Container extends Vue {
     this.neuronDetail.selectedTab = 'neuronStates'
     this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
     await this.$nextTick()
-    this.neuronDetail.neuronStates.featurePlot.renderChart()
+    this.neuronDetail.neuronStates.featurePlot && this.neuronDetail.neuronStates.featurePlot.renderChart()
     this.neuronDetail.neuronStates.histogramBars.renderChart()
     this.searchDialogVisible = false
     this.neuronList.setListData(neurons)
@@ -548,7 +530,7 @@ export default class Container extends Vue {
   //
   //         // 延迟渲染图表
   //         this.$nextTick().then(() => {
-  //           this.neuronDetail.neuronStates.featurePlot.renderChart();
+  //           this.neuronDetail.neuronStates.featurePlot && this.neuronDetail.neuronStates.featurePlot.renderChart();
   //           this.neuronDetail.neuronStates.histogramBars.renderChart();
   //         });
   //
@@ -599,10 +581,8 @@ export default class Container extends Vue {
         }
       })
 
-      // 添加其他查询条件（例如，brain_atlas）并初始化为空数组
-      if (!condition['brain_atlas']) {
-        condition['brain_atlas'] = [this.$store.state.atlas.toString()] // 你可以根据需求添加默认值或其他逻辑
-      }
+      // 添加species过滤，限定为Human数据
+      condition['species'] = ['Human']
       searchConditions = { criteria: condition }
       try {
         // eslint-disable-next-line camelcase
@@ -612,7 +592,7 @@ export default class Container extends Vue {
         this.neuronDetail.selectedTab = 'neuronStates'
         this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
         await this.$nextTick()
-        this.neuronDetail.neuronStates.featurePlot.renderChart()
+        this.neuronDetail.neuronStates.featurePlot && this.neuronDetail.neuronStates.featurePlot.renderChart()
         this.neuronDetail.neuronStates.histogramBars.renderChart()
         // this.LLMDialogVisible = false
         this.aiSearchWindow.addResponseFromAPI('I have found ' + neurons.length + ' neurons')
@@ -805,7 +785,7 @@ export default class Container extends Vue {
     try {
       this.searchDialogVisible = true
       await this.$nextTick()
-      neuronInfo['brain_atlas'] = this.$store.state.atlas
+      neuronInfo['brain_atlas'] = 'Human'
       this.neuronSearch.selectedConditions = await searchSimilarNeuron(document.body, neuronInfo).start()
     } catch (e) {
       console.error(e)
@@ -837,7 +817,7 @@ export default class Container extends Vue {
       this.neuronDetail.selectedTab = 'neuronStates'
       this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
       await this.$nextTick()
-      this.neuronDetail.neuronStates.featurePlot.renderChart()
+      this.neuronDetail.neuronStates.featurePlot && this.neuronDetail.neuronStates.featurePlot.renderChart()
       this.neuronDetail.neuronStates.histogramBars.renderChart()
     } catch (e) {
       console.log(e)
@@ -893,17 +873,23 @@ export default class Container extends Vue {
         neuronScene.setComponentVisible(localData, neuronDetail.selected)
       }
     } else {
-      const neuronInfo = await getNeuronInfo(document.body, neuronDetail.id, this.$store.state.atlas).start()
+      const neuronInfo = await getNeuronInfo(document.body, neuronDetail.id, 'Human').start()
 
-      this.neuronDetail.multiNeuronsViewer.neuronScene.multiViewerSomaPos.set(neuronDetail.id, neuronInfo.soma)
+      if (neuronInfo.soma && neuronInfo.soma.length >= 3) {
+        this.neuronDetail.multiNeuronsViewer.neuronScene.multiViewerSomaPos.set(neuronDetail.id, neuronInfo.soma)
+      }
 
-      dendriteData.src = neuronInfo.viewer_info[0].children[0].src
-      axonData.src = neuronInfo.viewer_info[0].children[1].src
-      apicalData.src = neuronInfo.viewer_info[0].children[2].src
-      localData.src = neuronInfo.viewer_info[0].children[3].src
+      // Human neurons may not have full viewer_info with 4 children
+      if (neuronInfo.viewer_info && neuronInfo.viewer_info.length > 0 && neuronInfo.viewer_info[0].children) {
+        const children = neuronInfo.viewer_info[0].children
+        if (children[0]) dendriteData.src = children[0].src
+        if (children[1]) axonData.src = children[1].src
+        if (children[2]) apicalData.src = children[2].src
+        if (children[3]) localData.src = children[3].src
+      }
 
       const loadAndSetVisible = async (data:any, condition: any, visibility: boolean) => {
-        if (condition) {
+        if (condition && data.src) {
           await neuronScene.loadObj(data)
           neuronScene.setComponentVisible(data, visibility)
         }

@@ -51,59 +51,38 @@
         <div class="neuron-tags">
           <el-tag
             class="neuron-tag-item-cell-type"
-            :color="getTagColor(item.celltype)"
+            :color="getTagColor(item.celltype || item.brain_region)"
             effect="dark"
             size="mini"
           >
-            {{ item.celltype }}
+            {{ item.celltype || item.brain_region }}
+          </el-tag>
+          <el-tag
+            v-if="item.gender"
+            class="neuron-tag-item"
+            :color="getTagColor(item.gender === 'M' ? 'male' : 'female')"
+            effect="dark"
+            size="mini"
+          >
+            {{ item.gender === 'M' ? 'Male' : 'Female' }}
+          </el-tag>
+          <el-tag
+            v-if="item.age"
+            class="neuron-tag-item"
+            :color="getTagColor('age')"
+            effect="dark"
+            size="mini"
+          >
+            {{ item.age }}y
           </el-tag>
           <el-tag
             class="neuron-tag-item"
-            :color="getTagColor('hemisphere')"
+            :class="{ disabled: !item.has_dendrite }"
+            :color="getTagColor('dendrite')"
             effect="dark"
             size="mini"
           >
-            {{ item.hemisphere }}
-          </el-tag>
-          <!--          <el-tag-->
-          <!--            class="neuron-tag-item"-->
-          <!--            :color="getTagColor(item.brain_atlas)"-->
-          <!--            effect="dark"-->
-          <!--            size="mini"-->
-          <!--          >-->
-          <!--            {{ item.brain_atlas }}-->
-          <!--          </el-tag>-->
-          <el-tag
-            v-for="(prop, j) in ['axon', 'dendrite', 'apical']"
-            :key="j"
-            class="neuron-tag-item"
-            :class="{ disabled: !item[`has_${prop}`] }"
-            :color="getTagColor(prop)"
-            effect="dark"
-            size="mini"
-          >
-            <template v-if="prop === 'dendrite'">
-              basal
-            </template>
-            <template v-else>
-              {{ prop }}
-            </template>
-          </el-tag>
-          <el-tag
-            class="neuron-tag-item"
-            :color="getTagColor(item.id.split('_')[0].split('-')[0])"
-            effect="dark"
-            size="mini"
-          >
-            <template v-if="item.id.split('_')[0].split('-')[0] === 'MouseLight'">
-              Janelia
-            </template>
-            <template v-else-if="item.id.split('_')[0].split('-')[0] === 'SEU'">
-              seuallen
-            </template>
-            <template v-else>
-              ION
-            </template>
+            dendrite
           </el-tag>
         </div>
         <el-button
@@ -266,17 +245,23 @@ export default class NeuronList extends Vue {
    */
   private getTagColor (prop: string) {
     const colorMap: { [key: string]: string } = {
-      axon: 'rgb(255, 0, 0)',
-      bouton: 'rgb(253, 242, 208)',
       dendrite: 'rgb(0, 80, 255)',
-      apical: 'rgb(255, 0, 255)',
-      arbor: 'rgb(255, 121, 108)',
-      CCFv3: 'rgb(214, 253, 254)',
-      fMOST: 'rgb(159, 205, 99)',
-      ION: 'rgb(6,194,172)',
-      SEU: 'rgb(6,194,172)',
-      MouseLight: 'rgb(6,194,172)',
-      hemisphere: 'rgb(255, 121, 108)'
+      male: 'rgb(100, 149, 237)',
+      female: 'rgb(255, 105, 180)',
+      age: 'rgb(255, 193, 37)',
+      SFG: 'rgb(102, 178, 255)',
+      MFG: 'rgb(255, 153, 102)',
+      IFG: 'rgb(153, 204, 102)',
+      STG: 'rgb(204, 153, 255)',
+      MTG: 'rgb(255, 204, 153)',
+      ITG: 'rgb(153, 221, 204)',
+      TP: 'rgb(255, 153, 153)',
+      SPL: 'rgb(204, 204, 153)',
+      SPG: 'rgb(153, 204, 204)',
+      RFL: 'rgb(204, 178, 153)',
+      ROL: 'rgb(178, 204, 153)',
+      OL: 'rgb(255, 221, 153)',
+      Unknown: 'rgb(200, 200, 200)'
     }
     // console.log(colorMap[prop] || 'white')
     return colorMap[prop] || 'white'

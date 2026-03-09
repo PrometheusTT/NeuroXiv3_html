@@ -1,0 +1,14 @@
+[
+    {"name": "Superior Frontal Gyrus", "acronym": "SFG"},
+    {"name": "Middle Frontal Gyrus", "acronym": "MFG"},
+    {"name": "Inferior Frontal Gyrus", "acronym": "IFG"},
+    {"name": "Superior Temporal Gyrus", "acronym": "STG"},
+    {"name": "Middle Temporal Gyrus", "acronym": "MTG"},
+    {"name": "Inferior Temporal Gyrus", "acronym": "ITG"},
+    {"name": "Temporal Pole", "acronym": "TP"},
+    {"name": "Superior Parietal Lobule", "acronym": "SPL"},
+    {"name": "Superior Parietal Gyrus", "acronym": "SPG"},
+    {"name": "Rolandic Fissure (area)", "acronym": "RFL"},
+    {"name": "Rolandic Operculum", "acronym": "ROL"},
+    {"name": "Occipital Lobe", "acronym": "OL"}
+]

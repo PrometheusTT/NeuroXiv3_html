@@ -1,0 +1,297 @@
+{
+    "name": "root",
+    "children": [
+        {
+            "name": "neuron info",
+            "children": [
+                {
+                    "querry_name": "brain_region",
+                    "type": "category",
+                    "display_name": "brain region",
+                    "help_info": "Human brain region where the neuron soma is located.",
+                    "structure_tree": "info,brain region",
+                    "candidates": [
+                        "SFG",
+                        "MFG",
+                        "IFG",
+                        "STG",
+                        "MTG",
+                        "ITG",
+                        "TP",
+                        "SPL",
+                        "SPG",
+                        "RFL",
+                        "ROL",
+                        "OL",
+                        "Unknown"
+                    ],
+                    "min_value": null,
+                    "max_value": null,
+                    "default_min": null,
+                    "default_max": null,
+                    "name": "brain region"
+                },
+                {
+                    "querry_name": "gender",
+                    "type": "category",
+                    "display_name": "gender",
+                    "help_info": "Gender of the patient from whom the neuron was obtained.",
+                    "structure_tree": "info,gender",
+                    "candidates": [
+                        "M",
+                        "F"
+                    ],
+                    "min_value": null,
+                    "max_value": null,
+                    "default_min": null,
+                    "default_max": null,
+                    "name": "gender"
+                }
+            ]
+        },
+        {
+            "name": "dendritic patterns",
+            "children": [
+                {
+                    "name": "morphological features",
+                    "children": [
+                        {
+                            "querry_name": "morpho_den_center shift",
+                            "type": "range",
+                            "display_name": "dendrite center shift",
+                            "help_info": "Center shift is the distance between soma and the centroid of the neuron.",
+                            "structure_tree": "dendrite,features,center shift",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 5000,
+                            "name": "center shift"
+                        },
+                        {
+                            "querry_name": "morpho_den_average contraction",
+                            "type": "range",
+                            "display_name": "dendrite average contraction",
+                            "help_info": "Average ratio of Euclidean distance to path distance for all bifurcation-to-bifurcation segments.",
+                            "structure_tree": "dendrite,features,average contraction",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": 1,
+                            "default_min": 0,
+                            "default_max": 1,
+                            "name": "average contraction"
+                        },
+                        {
+                            "querry_name": "morpho_den_max branch order",
+                            "type": "range",
+                            "display_name": "dendrite max branch order",
+                            "help_info": "Maximum branch order of the neurite tree.",
+                            "structure_tree": "dendrite,features,max branch order",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 100,
+                            "name": "max branch order"
+                        },
+                        {
+                            "querry_name": "morpho_den_max euclidean distance",
+                            "type": "range",
+                            "display_name": "dendrite max euclidean distance",
+                            "help_info": "Maximum Euclidean distance from any node to the soma.",
+                            "structure_tree": "dendrite,features,max euclidean distance",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 10000,
+                            "name": "max euclidean distance"
+                        },
+                        {
+                            "querry_name": "morpho_den_total length",
+                            "type": "range",
+                            "display_name": "dendrite total length",
+                            "help_info": "Total length of all dendrite segments.",
+                            "structure_tree": "dendrite,features,total length",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 100000,
+                            "name": "total length"
+                        },
+                        {
+                            "querry_name": "morpho_den_number of bifurcations",
+                            "type": "range",
+                            "display_name": "dendrite number of bifurcations",
+                            "help_info": "Total number of bifurcation points in the dendrite tree.",
+                            "structure_tree": "dendrite,features,number of bifurcations",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 1000,
+                            "name": "number of bifurcations"
+                        },
+                        {
+                            "querry_name": "morpho_den_max path distance",
+                            "type": "range",
+                            "display_name": "dendrite max path distance",
+                            "help_info": "Maximum path distance from soma to any terminal tip.",
+                            "structure_tree": "dendrite,features,max path distance",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 20000,
+                            "name": "max path distance"
+                        },
+                        {
+                            "querry_name": "morpho_den_height",
+                            "type": "range",
+                            "display_name": "dendrite height",
+                            "help_info": "Height of the bounding box of the neurite.",
+                            "structure_tree": "dendrite,features,height",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 10000,
+                            "name": "height"
+                        },
+                        {
+                            "querry_name": "morpho_den_width",
+                            "type": "range",
+                            "display_name": "dendrite width",
+                            "help_info": "Width of the bounding box of the neurite.",
+                            "structure_tree": "dendrite,features,width",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 10000,
+                            "name": "width"
+                        },
+                        {
+                            "querry_name": "morpho_den_depth",
+                            "type": "range",
+                            "display_name": "dendrite depth",
+                            "help_info": "Depth of the bounding box of the neurite.",
+                            "structure_tree": "dendrite,features,depth",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 10000,
+                            "name": "depth"
+                        },
+                        {
+                            "querry_name": "morpho_den_area",
+                            "type": "range",
+                            "display_name": "dendrite area",
+                            "help_info": "Product of width and height of bounding box.",
+                            "structure_tree": "dendrite,features,area",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 100000000,
+                            "name": "area"
+                        },
+                        {
+                            "querry_name": "morpho_den_volume",
+                            "type": "range",
+                            "display_name": "dendrite volume",
+                            "help_info": "Product of width, height, and depth of bounding box.",
+                            "structure_tree": "dendrite,features,volume",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 1000000000000,
+                            "name": "volume"
+                        },
+                        {
+                            "querry_name": "morpho_den_slimness",
+                            "type": "range",
+                            "display_name": "dendrite slimness",
+                            "help_info": "Ratio of height to width of bounding box.",
+                            "structure_tree": "dendrite,features,slimness",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 50,
+                            "name": "slimness"
+                        },
+                        {
+                            "querry_name": "morpho_den_flatness",
+                            "type": "range",
+                            "display_name": "dendrite flatness",
+                            "help_info": "Ratio of width to depth of bounding box.",
+                            "structure_tree": "dendrite,features,flatness",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 50,
+                            "name": "flatness"
+                        },
+                        {
+                            "querry_name": "morpho_den_average euclidean distance",
+                            "type": "range",
+                            "display_name": "dendrite average euclidean distance",
+                            "help_info": "Average Euclidean distance from nodes to the soma.",
+                            "structure_tree": "dendrite,features,average euclidean distance",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 5000,
+                            "name": "average euclidean distance"
+                        },
+                        {
+                            "querry_name": "morpho_den_average path distance",
+                            "type": "range",
+                            "display_name": "dendrite average path distance",
+                            "help_info": "Average path distance from nodes to the soma.",
+                            "structure_tree": "dendrite,features,average path distance",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": null,
+                            "default_min": 0,
+                            "default_max": 10000,
+                            "name": "average path distance"
+                        },
+                        {
+                            "querry_name": "morpho_den_average bifurcation angle local",
+                            "type": "range",
+                            "display_name": "dendrite avg bifurcation angle (local)",
+                            "help_info": "Average bifurcation angle using local directions.",
+                            "structure_tree": "dendrite,features,average bifurcation angle local",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": 180,
+                            "default_min": 0,
+                            "default_max": 180,
+                            "name": "average bifurcation angle local"
+                        },
+                        {
+                            "querry_name": "morpho_den_average bifurcation angle remote",
+                            "type": "range",
+                            "display_name": "dendrite avg bifurcation angle (remote)",
+                            "help_info": "Average bifurcation angle using remote directions.",
+                            "structure_tree": "dendrite,features,average bifurcation angle remote",
+                            "candidates": null,
+                            "min_value": 0,
+                            "max_value": 180,
+                            "default_min": 0,
+                            "default_max": 180,
+                            "name": "average bifurcation angle remote"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

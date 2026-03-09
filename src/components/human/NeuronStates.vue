@@ -12,14 +12,20 @@
       ref="featurePlots"
       class="feature-plots"
     >
-      <div class="feature-plot-container">
+      <div
+        v-if="neuronStatesData.plot.proj_plot && neuronStatesData.plot.proj_plot.length > 0"
+        class="feature-plot-container"
+      >
         <NeuronFeaturePlots
           ref="featurePlot"
           :plot-data="neuronStatesData.plot.proj_plot"
           class="feature-plot abs-full"
         />
       </div>
-      <hr class="plot-separator">
+      <hr
+        v-if="neuronStatesData.plot.proj_plot && neuronStatesData.plot.proj_plot.length > 0"
+        class="plot-separator"
+      >
       <NeuronFeatureHistogramBars
         ref="histogramBars"
         :histogram-data="neuronStatesData.plot.hist_plot"

@@ -17,59 +17,22 @@
                 name="basicInfo"
               >
                 <p>{{ neuronInfoData.id }}</p>
-                <p>brain region: {{ neuronInfoData.celltype }}</p>
-                <p v-if="neuronInfoData.id && neuronInfoData.id.indexOf('full') !== -1">
-                  manual labeled brain region: {{ neuronInfoData.celltype_manual }}
+                <p>brain region: {{ neuronInfoData.celltype || neuronInfoData.brain_region }}</p>
+                <p v-show="neuronInfoData.species">
+                  species: {{ neuronInfoData.species }}
                 </p>
-                <p>registration atlas: {{ neuronInfoData.brain_atlas }}</p>
-                <p v-show="neuronInfoData.layer">
-                  layer: {{ neuronInfoData.layer }}
+                <p v-show="neuronInfoData.gender">
+                  gender: {{ neuronInfoData.gender === 'M' ? 'Male' : 'Female' }}
                 </p>
-                <p v-show="neuronInfoData.hemisphere">
-                  hemisphere: {{ neuronInfoData.hemisphere }}
+                <p v-show="neuronInfoData.age">
+                  age: {{ neuronInfoData.age }}
                 </p>
-              </el-collapse-item>
-              <el-collapse-item
-                title="similar neurons"
-                name="similarInfo"
-              >
-                <ul class="connect-item-list">
-                  <li
-                    v-for="(item, i) in neuronInfoData.simi_info"
-                    :key="i"
-                    class="connect-item"
-                  >
-                    <span class="connect-label">{{ item.type }} similar cells: {{ item.id_list.length }}</span>
-                    <el-button
-                      type="text"
-                      :disabled="!item.id_list || item.id_list.length === 0"
-                      @click="$emit('checkConnectedNeurons', item.id_list)"
-                    >
-                      View
-                    </el-button>
-                  </li>
-                </ul>
-              </el-collapse-item>
-              <el-collapse-item
-                title="nearby neurons"
-                name="connectInfo"
-              >
-                <ul class="connect-item-list">
-                  <li
-                    v-for="(item, i) in neuronInfoData.conn_info"
-                    :key="i"
-                    class="connect-item"
-                  >
-                    <span class="connect-label">{{ item.type }} neighboring cells: {{ item.id_list.length }}</span>
-                    <el-button
-                      type="text"
-                      :disabled="!item.id_list || item.id_list.length === 0"
-                      @click="$emit('checkConnectedNeurons', item.id_list)"
-                    >
-                      View
-                    </el-button>
-                  </li>
-                </ul>
+                <p v-show="neuronInfoData.patient_number">
+                  patient: {{ neuronInfoData.patient_number }}
+                </p>
+                <p v-show="neuronInfoData.data_source">
+                  data source: {{ neuronInfoData.data_source }}
+                </p>
               </el-collapse-item>
               <el-collapse-item
                 title="morphology features"
@@ -79,12 +42,6 @@
                   :morpho-info="neuronInfoData.morpho_info"
                   type="single"
                 />
-              </el-collapse-item>
-              <el-collapse-item
-                title="anatomy/projection info"
-                name="projectionInfo"
-              >
-                <ProjectionInfoTable :proj-info="neuronInfoData.proj_info" />
               </el-collapse-item>
             </el-collapse>
           </section>

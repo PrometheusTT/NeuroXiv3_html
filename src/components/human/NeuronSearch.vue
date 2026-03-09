@@ -10,7 +10,7 @@
         <el-tooltip
           class="item"
           effect="dark"
-          content="Allen Mouse Brain Common Coordinate Framework version 3 (CCFv3) regional ontology"
+          content="Human Brain Region Ontology"
           placement="top"
         >
           <div
@@ -262,7 +262,7 @@
     </el-dialog>
 
    <el-dialog
-      title="Allen Mouse Brain Common Coordinate Framework version 3 (CCFv3) regional ontology"
+      title="Human Brain Region Ontology"
       :visible.sync="dialogVisible"
       width="30%"
       :append-to-body="true"
@@ -310,9 +310,8 @@ import moment from 'moment'
 import { debounce } from 'lodash'
 import Papa from 'papaparse'
 
-import searchConditions from './search_conditions.json'
-import neuronViewerBaseData from './surf_tree.json'
-import pdfData from '@/components/human/Allen_Mouse_Brain_CCFv3.json'
+import searchConditions from './search_conditions_human.json'
+import humanBrainRegions from '@/components/human/Human_Brain_Regions.json'
 const requireConfig = require.context('@/assets/search_config', false, /\.json$/)
 const configs = requireConfig.keys().map((key) => requireConfig(key))
 
@@ -342,10 +341,10 @@ export default class NeuronSearch extends Vue {
   private possibleAcronyms: Set<string> = new Set()
   private cachedFilterValue: string = ''
   private dialogVisible:boolean = false // 控制 PDF 对话框显示
-  private pdfData :any = pdfData // PDF 文件路径
+  private pdfData :any = humanBrainRegions
 
   created () {
-    this.initializeFullNameMap(neuronViewerBaseData)
+    this.initializeFullNameMap(humanBrainRegions)
     // 初始化 fullNameToAcronymMap
     for (const [acronym, fullName] of Object.entries(this.fullNameMap)) {
       this.fullNameToAcronymMap[fullName.toLowerCase()] = acronym.toLowerCase()
