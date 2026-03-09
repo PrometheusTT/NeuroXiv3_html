@@ -1,0 +1,1490 @@
+[
+  {
+    "acronym": "root",
+    "rgb_triplet": [220, 220, 220],
+    "id": 1,
+    "name": "Human Brain (CereBrA)",
+    "src": "/data/CereBrA/root.vtp",
+    "disabled": false,
+    "children": [
+      {
+        "acronym": "Frontal",
+        "rgb_triplet": [100, 200, 100],
+        "id": 100,
+        "name": "Frontal Lobe",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "SFG",
+            "rgb_triplet": [50, 180, 80],
+            "id": 1001,
+            "name": "Superior Frontal Gyrus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "SFG-R",
+                "rgb_triplet": [50, 180, 80],
+                "id": 10011,
+                "name": "Superior Frontal (Right)",
+                "src": "/data/CereBrA/38_rh.Superior Frontal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "SFG-L",
+                "rgb_triplet": [70, 200, 100],
+                "id": 10012,
+                "name": "Superior Frontal (Left)",
+                "src": "/data/CereBrA/89_lh.Superior Frontal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "MFG",
+            "rgb_triplet": [60, 160, 90],
+            "id": 1002,
+            "name": "Middle Frontal Gyrus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "CMF-R",
+                "rgb_triplet": [60, 160, 90],
+                "id": 10021,
+                "name": "Caudal Middle Frontal (Right)",
+                "src": "/data/CereBrA/42_rh.Caudal Middle Frontal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "CMF-L",
+                "rgb_triplet": [80, 180, 110],
+                "id": 10022,
+                "name": "Caudal Middle Frontal (Left)",
+                "src": "/data/CereBrA/93_lh.Caudal Middle Frontal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "RMF-R",
+                "rgb_triplet": [70, 170, 100],
+                "id": 10023,
+                "name": "Rostral Middle Frontal (Right)",
+                "src": "/data/CereBrA/1_rh.Rostral Middle Frontal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "RMF-L",
+                "rgb_triplet": [90, 190, 120],
+                "id": 10024,
+                "name": "Rostral Middle Frontal (Left)",
+                "src": "/data/CereBrA/52_lh.Rostral Middle Frontal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "IFG",
+            "rgb_triplet": [80, 140, 70],
+            "id": 1003,
+            "name": "Inferior Frontal Gyrus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "POp-R",
+                "rgb_triplet": [80, 140, 70],
+                "id": 10031,
+                "name": "Pars Opercularis (Right)",
+                "src": "/data/CereBrA/32_rh.Pars Opercularis.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "POp-L",
+                "rgb_triplet": [100, 160, 90],
+                "id": 10032,
+                "name": "Pars Opercularis (Left)",
+                "src": "/data/CereBrA/83_lh.Pars Opercularis.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "POrb-R",
+                "rgb_triplet": [90, 150, 80],
+                "id": 10033,
+                "name": "Pars Orbitalis (Right)",
+                "src": "/data/CereBrA/44_rh.Pars Orbitalis.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "POrb-L",
+                "rgb_triplet": [110, 170, 100],
+                "id": 10034,
+                "name": "Pars Orbitalis (Left)",
+                "src": "/data/CereBrA/95_lh.Pars Orbitalis.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PTri-R",
+                "rgb_triplet": [85, 145, 75],
+                "id": 10035,
+                "name": "Pars Triangularis (Right)",
+                "src": "/data/CereBrA/22_rh.Pars Triangularis.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PTri-L",
+                "rgb_triplet": [105, 165, 95],
+                "id": 10036,
+                "name": "Pars Triangularis (Left)",
+                "src": "/data/CereBrA/73_lh.Pars Triangularis.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "RFL",
+            "rgb_triplet": [120, 200, 140],
+            "id": 1004,
+            "name": "Rolandic Fissure (area)",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "PreC-R",
+                "rgb_triplet": [120, 200, 140],
+                "id": 10041,
+                "name": "Precentral (Right)",
+                "src": "/data/CereBrA/35_rh.Precentral.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PreC-L",
+                "rgb_triplet": [140, 220, 160],
+                "id": 10042,
+                "name": "Precentral (Left)",
+                "src": "/data/CereBrA/86_lh.Precentral.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PstC-R",
+                "rgb_triplet": [130, 210, 150],
+                "id": 10043,
+                "name": "Postcentral (Right)",
+                "src": "/data/CereBrA/13_rh.Postcentral.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PstC-L",
+                "rgb_triplet": [150, 230, 170],
+                "id": 10044,
+                "name": "Postcentral (Left)",
+                "src": "/data/CereBrA/64_lh.Postcentral.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "ROL",
+            "rgb_triplet": [90, 170, 110],
+            "id": 1005,
+            "name": "Rolandic Operculum",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "ParaC-R",
+                "rgb_triplet": [90, 170, 110],
+                "id": 10051,
+                "name": "Paracentral (Right)",
+                "src": "/data/CereBrA/16_rh.Paracentral.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "ParaC-L",
+                "rgb_triplet": [110, 190, 130],
+                "id": 10052,
+                "name": "Paracentral (Left)",
+                "src": "/data/CereBrA/67_lh.Paracentral.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "LtOrb",
+            "rgb_triplet": [70, 150, 85],
+            "id": 1006,
+            "name": "Lateral Orbitofrontal",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "LtOrb-R",
+                "rgb_triplet": [70, 150, 85],
+                "id": 10061,
+                "name": "Lateral Orbitofrontal (Right)",
+                "src": "/data/CereBrA/7_rh.Lateral Orbitofrontal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "LtOrb-L",
+                "rgb_triplet": [90, 170, 105],
+                "id": 10062,
+                "name": "Lateral Orbitofrontal (Left)",
+                "src": "/data/CereBrA/58_lh.Lateral Orbitofrontal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "MdOrb",
+            "rgb_triplet": [65, 145, 80],
+            "id": 1007,
+            "name": "Medial Orbitofrontal",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "MdOrb-R",
+                "rgb_triplet": [65, 145, 80],
+                "id": 10071,
+                "name": "Medial Orbitofrontal (Right)",
+                "src": "/data/CereBrA/15_rh.Medial Orbitofrontal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "MdOrb-L",
+                "rgb_triplet": [85, 165, 100],
+                "id": 10072,
+                "name": "Medial Orbitofrontal (Left)",
+                "src": "/data/CereBrA/66_lh.Medial Orbitofrontal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "Temporal",
+        "rgb_triplet": [200, 180, 80],
+        "id": 200,
+        "name": "Temporal Lobe",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "STG",
+            "rgb_triplet": [200, 180, 80],
+            "id": 2001,
+            "name": "Superior Temporal Gyrus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "STG-R",
+                "rgb_triplet": [200, 180, 80],
+                "id": 20011,
+                "name": "Superior Temporal (Right)",
+                "src": "/data/CereBrA/45_rh.Superior Temporal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "STG-L",
+                "rgb_triplet": [220, 200, 100],
+                "id": 20012,
+                "name": "Superior Temporal (Left)",
+                "src": "/data/CereBrA/96_lh.Superior Temporal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "MTG",
+            "rgb_triplet": [180, 160, 60],
+            "id": 2002,
+            "name": "Middle Temporal Gyrus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "MTG-R",
+                "rgb_triplet": [180, 160, 60],
+                "id": 20021,
+                "name": "Middle Temporal (Right)",
+                "src": "/data/CereBrA/28_rh.Middle Temporal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "MTG-L",
+                "rgb_triplet": [200, 180, 80],
+                "id": 20022,
+                "name": "Middle Temporal (Left)",
+                "src": "/data/CereBrA/79_lh.Middle Temporal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "ITG",
+            "rgb_triplet": [160, 140, 50],
+            "id": 2003,
+            "name": "Inferior Temporal Gyrus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "ITG-R",
+                "rgb_triplet": [160, 140, 50],
+                "id": 20031,
+                "name": "Inferior Temporal (Right)",
+                "src": "/data/CereBrA/3_rh.Inferior Temporal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "ITG-L",
+                "rgb_triplet": [180, 160, 70],
+                "id": 20032,
+                "name": "Inferior Temporal (Left)",
+                "src": "/data/CereBrA/54_lh.Inferior Temporal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "TP",
+            "rgb_triplet": [210, 190, 90],
+            "id": 2004,
+            "name": "Temporal Pole",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "TrT-R",
+                "rgb_triplet": [210, 190, 90],
+                "id": 20041,
+                "name": "Transverse Temporal (Right)",
+                "src": "/data/CereBrA/14_rh.Transverse Temporal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "TrT-L",
+                "rgb_triplet": [230, 210, 110],
+                "id": 20042,
+                "name": "Transverse Temporal (Left)",
+                "src": "/data/CereBrA/65_lh.Transverse Temporal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Fusi",
+            "rgb_triplet": [190, 170, 70],
+            "id": 2005,
+            "name": "Fusiform",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Fusi-R",
+                "rgb_triplet": [190, 170, 70],
+                "id": 20051,
+                "name": "Fusiform (Right)",
+                "src": "/data/CereBrA/24_rh.Fusiform.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Fusi-L",
+                "rgb_triplet": [210, 190, 90],
+                "id": 20052,
+                "name": "Fusiform (Left)",
+                "src": "/data/CereBrA/75_lh.Fusiform.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Ento",
+            "rgb_triplet": [170, 150, 55],
+            "id": 2006,
+            "name": "Entorhinal",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Ento-R",
+                "rgb_triplet": [170, 150, 55],
+                "id": 20061,
+                "name": "Entorhinal (Right)",
+                "src": "/data/CereBrA/36_rh.Entorhinal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Ento-L",
+                "rgb_triplet": [190, 170, 75],
+                "id": 20062,
+                "name": "Entorhinal (Left)",
+                "src": "/data/CereBrA/87_lh.Entorhinal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "Parietal",
+        "rgb_triplet": [100, 150, 220],
+        "id": 300,
+        "name": "Parietal Lobe",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "SPL",
+            "rgb_triplet": [100, 150, 220],
+            "id": 3001,
+            "name": "Superior Parietal Lobule",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "SPL-R",
+                "rgb_triplet": [100, 150, 220],
+                "id": 30011,
+                "name": "Superior Parietal (Right)",
+                "src": "/data/CereBrA/9_rh.Superior Parietal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "SPL-L",
+                "rgb_triplet": [120, 170, 240],
+                "id": 30012,
+                "name": "Superior Parietal (Left)",
+                "src": "/data/CereBrA/60_lh.Superior Parietal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "IPL",
+            "rgb_triplet": [80, 130, 200],
+            "id": 3002,
+            "name": "Inferior Parietal",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "IPL-R",
+                "rgb_triplet": [80, 130, 200],
+                "id": 30021,
+                "name": "Inferior Parietal (Right)",
+                "src": "/data/CereBrA/10_rh.Inferior Parietal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "IPL-L",
+                "rgb_triplet": [100, 150, 220],
+                "id": 30022,
+                "name": "Inferior Parietal (Left)",
+                "src": "/data/CereBrA/61_lh.Inferior Parietal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "SMG",
+            "rgb_triplet": [110, 160, 230],
+            "id": 3003,
+            "name": "Supramarginal",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "SMG-R",
+                "rgb_triplet": [110, 160, 230],
+                "id": 30031,
+                "name": "Supramarginal (Right)",
+                "src": "/data/CereBrA/51_rh.Supramarginal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "SMG-L",
+                "rgb_triplet": [130, 180, 250],
+                "id": 30032,
+                "name": "Supramarginal (Left)",
+                "src": "/data/CereBrA/102_lh.Supramarginal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "PrCu",
+            "rgb_triplet": [90, 140, 210],
+            "id": 3004,
+            "name": "Precuneus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "PrCu-R",
+                "rgb_triplet": [90, 140, 210],
+                "id": 30041,
+                "name": "Precuneus (Right)",
+                "src": "/data/CereBrA/31_rh.Precuneus.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PrCu-L",
+                "rgb_triplet": [110, 160, 230],
+                "id": 30042,
+                "name": "Precuneus (Left)",
+                "src": "/data/CereBrA/82_lh.Precuneus.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "OL",
+        "rgb_triplet": [200, 100, 100],
+        "id": 400,
+        "name": "Occipital Lobe",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "LtOcc",
+            "rgb_triplet": [200, 100, 100],
+            "id": 4001,
+            "name": "Lateral Occipital",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "LtOcc-R",
+                "rgb_triplet": [200, 100, 100],
+                "id": 40011,
+                "name": "Lateral Occipital (Right)",
+                "src": "/data/CereBrA/34_rh.Lateral Occipital.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "LtOcc-L",
+                "rgb_triplet": [220, 120, 120],
+                "id": 40012,
+                "name": "Lateral Occipital (Left)",
+                "src": "/data/CereBrA/85_lh.Lateral Occipital.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Cune",
+            "rgb_triplet": [180, 80, 80],
+            "id": 4002,
+            "name": "Cuneus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Cune-R",
+                "rgb_triplet": [180, 80, 80],
+                "id": 40021,
+                "name": "Cuneus (Right)",
+                "src": "/data/CereBrA/43_rh.Cuneus.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Cune-L",
+                "rgb_triplet": [200, 100, 100],
+                "id": 40022,
+                "name": "Cuneus (Left)",
+                "src": "/data/CereBrA/94_lh.Cuneus.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Ling",
+            "rgb_triplet": [190, 90, 90],
+            "id": 4003,
+            "name": "Lingual",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Ling-R",
+                "rgb_triplet": [190, 90, 90],
+                "id": 40031,
+                "name": "Lingual (Right)",
+                "src": "/data/CereBrA/12_rh.Lingual.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Ling-L",
+                "rgb_triplet": [210, 110, 110],
+                "id": 40032,
+                "name": "Lingual (Left)",
+                "src": "/data/CereBrA/63_lh.Lingual.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "PeriC",
+            "rgb_triplet": [170, 70, 70],
+            "id": 4004,
+            "name": "Pericalcarine",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "PeriC-R",
+                "rgb_triplet": [170, 70, 70],
+                "id": 40041,
+                "name": "Pericalcarine (Right)",
+                "src": "/data/CereBrA/6_rh.Pericalcarine.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PeriC-L",
+                "rgb_triplet": [190, 90, 90],
+                "id": 40042,
+                "name": "Pericalcarine (Left)",
+                "src": "/data/CereBrA/57_lh.Pericalcarine.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "Cingulate",
+        "rgb_triplet": [180, 130, 200],
+        "id": 500,
+        "name": "Cingulate Cortex",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "CdAC",
+            "rgb_triplet": [180, 130, 200],
+            "id": 5001,
+            "name": "Caudal Anterior Cingulate",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "CdAC-R",
+                "rgb_triplet": [180, 130, 200],
+                "id": 50011,
+                "name": "Caudal Anterior Cingulate (Right)",
+                "src": "/data/CereBrA/30_rh.Caudal Anterior Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "CdAC-L",
+                "rgb_triplet": [200, 150, 220],
+                "id": 50012,
+                "name": "Caudal Anterior Cingulate (Left)",
+                "src": "/data/CereBrA/81_lh.Caudal Anterior Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "RsAC",
+            "rgb_triplet": [160, 110, 180],
+            "id": 5002,
+            "name": "Rostral Anterior Cingulate",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "RsAC-R",
+                "rgb_triplet": [160, 110, 180],
+                "id": 50021,
+                "name": "Rostral Anterior Cingulate (Right)",
+                "src": "/data/CereBrA/8_rh.Rostral Anterior Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "RsAC-L",
+                "rgb_triplet": [180, 130, 200],
+                "id": 50022,
+                "name": "Rostral Anterior Cingulate (Left)",
+                "src": "/data/CereBrA/59_lh.Rostral Anterior Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "PsCi",
+            "rgb_triplet": [170, 120, 190],
+            "id": 5003,
+            "name": "Posterior Cingulate",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "PsCi-R",
+                "rgb_triplet": [170, 120, 190],
+                "id": 50031,
+                "name": "Posterior Cingulate (Right)",
+                "src": "/data/CereBrA/47_rh.Posterior Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PsCi-L",
+                "rgb_triplet": [190, 140, 210],
+                "id": 50032,
+                "name": "Posterior Cingulate (Left)",
+                "src": "/data/CereBrA/98_lh.Posterior Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "IsCi",
+            "rgb_triplet": [150, 100, 170],
+            "id": 5004,
+            "name": "Isthmus Cingulate",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "IsCi-R",
+                "rgb_triplet": [150, 100, 170],
+                "id": 50041,
+                "name": "Isthmus Cingulate (Right)",
+                "src": "/data/CereBrA/33_rh.Isthmus Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "IsCi-L",
+                "rgb_triplet": [170, 120, 190],
+                "id": 50042,
+                "name": "Isthmus Cingulate (Left)",
+                "src": "/data/CereBrA/84_lh.Isthmus Cingulate.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "Insular",
+        "rgb_triplet": [220, 160, 80],
+        "id": 600,
+        "name": "Insular Cortex",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "Ins-R",
+            "rgb_triplet": [220, 160, 80],
+            "id": 6001,
+            "name": "Insula (Right)",
+            "src": "/data/CereBrA/23_rh.Insula.vtp",
+            "disabled": false,
+            "children": []
+          },
+          {
+            "acronym": "Ins-L",
+            "rgb_triplet": [240, 180, 100],
+            "id": 6002,
+            "name": "Insula (Left)",
+            "src": "/data/CereBrA/74_lh.Insula.vtp",
+            "disabled": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "acronym": "Subcortical",
+        "rgb_triplet": [160, 160, 200],
+        "id": 700,
+        "name": "Subcortical Structures",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "Thal",
+            "rgb_triplet": [160, 160, 200],
+            "id": 7001,
+            "name": "Thalamus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Thal-R",
+                "rgb_triplet": [160, 160, 200],
+                "id": 70011,
+                "name": "Thalamus (Right)",
+                "src": "/data/CereBrA/40_rh.Thalamus.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Thal-L",
+                "rgb_triplet": [180, 180, 220],
+                "id": 70012,
+                "name": "Thalamus (Left)",
+                "src": "/data/CereBrA/91_lh.Thalamus.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Caud",
+            "rgb_triplet": [140, 140, 180],
+            "id": 7002,
+            "name": "Caudate",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Caud-R",
+                "rgb_triplet": [140, 140, 180],
+                "id": 70021,
+                "name": "Caudate (Right)",
+                "src": "/data/CereBrA/49_rh.Caudate.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Caud-L",
+                "rgb_triplet": [160, 160, 200],
+                "id": 70022,
+                "name": "Caudate (Left)",
+                "src": "/data/CereBrA/100_lh.Caudate.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Put",
+            "rgb_triplet": [150, 150, 190],
+            "id": 7003,
+            "name": "Putamen",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Put-R",
+                "rgb_triplet": [150, 150, 190],
+                "id": 70031,
+                "name": "Putamen (Right)",
+                "src": "/data/CereBrA/21_rh.Putamen.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Put-L",
+                "rgb_triplet": [170, 170, 210],
+                "id": 70032,
+                "name": "Putamen (Left)",
+                "src": "/data/CereBrA/72_lh.Putamen.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Pall",
+            "rgb_triplet": [130, 130, 170],
+            "id": 7004,
+            "name": "Pallidum",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Pall-R",
+                "rgb_triplet": [130, 130, 170],
+                "id": 70041,
+                "name": "Pallidum (Right)",
+                "src": "/data/CereBrA/27_rh.Pallidum.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Pall-L",
+                "rgb_triplet": [150, 150, 190],
+                "id": 70042,
+                "name": "Pallidum (Left)",
+                "src": "/data/CereBrA/78_lh.Pallidum.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Hipp",
+            "rgb_triplet": [170, 170, 210],
+            "id": 7005,
+            "name": "Hippocampus",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Hipp-R",
+                "rgb_triplet": [170, 170, 210],
+                "id": 70051,
+                "name": "Hippocampus (Right)",
+                "src": "/data/CereBrA/48_rh.Hippocampus.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Hipp-L",
+                "rgb_triplet": [190, 190, 230],
+                "id": 70052,
+                "name": "Hippocampus (Left)",
+                "src": "/data/CereBrA/99_lh.Hippocampus.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "Amyg",
+            "rgb_triplet": [145, 145, 185],
+            "id": 7006,
+            "name": "Amygdala",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "Amyg-R",
+                "rgb_triplet": [145, 145, 185],
+                "id": 70061,
+                "name": "Amygdala (Right)",
+                "src": "/data/CereBrA/19_rh.Amygdala.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "Amyg-L",
+                "rgb_triplet": [165, 165, 205],
+                "id": 70062,
+                "name": "Amygdala (Left)",
+                "src": "/data/CereBrA/70_lh.Amygdala.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "NAcc",
+            "rgb_triplet": [135, 135, 175],
+            "id": 7007,
+            "name": "Accumbens Area",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "NAcc-R",
+                "rgb_triplet": [135, 135, 175],
+                "id": 70071,
+                "name": "Accumbens Area (Right)",
+                "src": "/data/CereBrA/4_rh.Accumbens Area.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "NAcc-L",
+                "rgb_triplet": [155, 155, 195],
+                "id": 70072,
+                "name": "Accumbens Area (Left)",
+                "src": "/data/CereBrA/55_lh.Accumbens Area.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "VDie",
+            "rgb_triplet": [125, 125, 165],
+            "id": 7008,
+            "name": "Ventral Diencephalon",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "VDie-R",
+                "rgb_triplet": [125, 125, 165],
+                "id": 70081,
+                "name": "Ventral Diencephalon (Right)",
+                "src": "/data/CereBrA/26_rh.Ventral Diencephalon.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "VDie-L",
+                "rgb_triplet": [145, 145, 185],
+                "id": 70082,
+                "name": "Ventral Diencephalon (Left)",
+                "src": "/data/CereBrA/77_lh.Ventral Diencephalon.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "BsFb",
+            "rgb_triplet": [120, 120, 160],
+            "id": 7009,
+            "name": "Basal Forebrain",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "BsFb-R",
+                "rgb_triplet": [120, 120, 160],
+                "id": 70091,
+                "name": "Basal Forebrain (Right)",
+                "src": "/data/CereBrA/25_rh.Basal Forebrain.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "BsFb-L",
+                "rgb_triplet": [140, 140, 180],
+                "id": 70092,
+                "name": "Basal Forebrain (Left)",
+                "src": "/data/CereBrA/76_lh.Basal Forebrain.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "MedTemp",
+        "rgb_triplet": [200, 150, 120],
+        "id": 800,
+        "name": "Medial Temporal",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "PHip",
+            "rgb_triplet": [200, 150, 120],
+            "id": 8001,
+            "name": "Parahippocampal",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "PHip-R",
+                "rgb_triplet": [200, 150, 120],
+                "id": 80011,
+                "name": "Parahippocampal (Right)",
+                "src": "/data/CereBrA/18_rh.Parahippocampal.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "PHip-L",
+                "rgb_triplet": [220, 170, 140],
+                "id": 80012,
+                "name": "Parahippocampal (Left)",
+                "src": "/data/CereBrA/69_lh.Parahippocampal.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "Brainstem",
+        "rgb_triplet": [180, 180, 140],
+        "id": 900,
+        "name": "Brainstem",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "BS-R",
+            "rgb_triplet": [180, 180, 140],
+            "id": 9001,
+            "name": "Brainstem (Right)",
+            "src": "/data/CereBrA/11_rh.Brainstem.vtp",
+            "disabled": false,
+            "children": []
+          },
+          {
+            "acronym": "BS-L",
+            "rgb_triplet": [200, 200, 160],
+            "id": 9002,
+            "name": "Brainstem (Left)",
+            "src": "/data/CereBrA/62_lh.Brainstem.vtp",
+            "disabled": false,
+            "children": []
+          }
+        ]
+      },
+      {
+        "acronym": "Cerebellum",
+        "rgb_triplet": [160, 200, 160],
+        "id": 1100,
+        "name": "Cerebellum",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "CbGM",
+            "rgb_triplet": [160, 200, 160],
+            "id": 11001,
+            "name": "Cerebellum Gray Matter",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "CbGM-R",
+                "rgb_triplet": [160, 200, 160],
+                "id": 110011,
+                "name": "Cerebellum Gray Matter (Right)",
+                "src": "/data/CereBrA/46_rh.Cerebellum Gray Matter.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "CbGM-L",
+                "rgb_triplet": [180, 220, 180],
+                "id": 110012,
+                "name": "Cerebellum Gray Matter (Left)",
+                "src": "/data/CereBrA/97_lh.Cerebellum Gray Matter.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "CbWM",
+            "rgb_triplet": [140, 180, 140],
+            "id": 11002,
+            "name": "Cerebellum White Matter",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "CbWM-R",
+                "rgb_triplet": [140, 180, 140],
+                "id": 110021,
+                "name": "Cerebellum White Matter (Right)",
+                "src": "/data/CereBrA/39_rh.Cerebellum White Matter.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "CbWM-L",
+                "rgb_triplet": [160, 200, 160],
+                "id": 110022,
+                "name": "Cerebellum White Matter (Left)",
+                "src": "/data/CereBrA/90_lh.Cerebellum White Matter.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "VrmI",
+            "rgb_triplet": [150, 190, 150],
+            "id": 11003,
+            "name": "Vermal lobules I-V",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "VrmI-R",
+                "rgb_triplet": [150, 190, 150],
+                "id": 110031,
+                "name": "Vermal lobules I-V (Right)",
+                "src": "/data/CereBrA/50_rh.Vermal lobules I-V.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "VrmI-L",
+                "rgb_triplet": [170, 210, 170],
+                "id": 110032,
+                "name": "Vermal lobules I-V (Left)",
+                "src": "/data/CereBrA/101_lh.Vermal lobules I-V.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "VrmVI",
+            "rgb_triplet": [145, 185, 145],
+            "id": 11004,
+            "name": "Vermal lobules VI-VII",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "VrmVI-R",
+                "rgb_triplet": [145, 185, 145],
+                "id": 110041,
+                "name": "Vermal lobules VI-VII (Right)",
+                "src": "/data/CereBrA/2_rh.Vermal lobules VI-VII.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "VrmVI-L",
+                "rgb_triplet": [165, 205, 165],
+                "id": 110042,
+                "name": "Vermal lobules VI-VII (Left)",
+                "src": "/data/CereBrA/53_lh.Vermal lobules VI-VII.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "VrmVIII",
+            "rgb_triplet": [155, 195, 155],
+            "id": 11005,
+            "name": "Vermal lobules VIII-X",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "VrmVIII-R",
+                "rgb_triplet": [155, 195, 155],
+                "id": 110051,
+                "name": "Vermal lobules VIII-X (Right)",
+                "src": "/data/CereBrA/20_rh.Vermal lobules VIII-X.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "VrmVIII-L",
+                "rgb_triplet": [175, 215, 175],
+                "id": 110052,
+                "name": "Vermal lobules VIII-X (Left)",
+                "src": "/data/CereBrA/71_lh.Vermal lobules VIII-X.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "acronym": "Ventricles",
+        "rgb_triplet": [100, 180, 220],
+        "id": 1200,
+        "name": "Ventricles",
+        "src": "",
+        "disabled": true,
+        "children": [
+          {
+            "acronym": "LtVn",
+            "rgb_triplet": [100, 180, 220],
+            "id": 12001,
+            "name": "Lateral Ventricle",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "LtVn-R",
+                "rgb_triplet": [100, 180, 220],
+                "id": 120011,
+                "name": "Lateral Ventricle (Right)",
+                "src": "/data/CereBrA/41_rh.Lateral Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "LtVn-L",
+                "rgb_triplet": [120, 200, 240],
+                "id": 120012,
+                "name": "Lateral Ventricle (Left)",
+                "src": "/data/CereBrA/92_lh.Lateral Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "ILVn",
+            "rgb_triplet": [90, 170, 210],
+            "id": 12002,
+            "name": "Inferior Lateral Ventricle",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "ILVn-R",
+                "rgb_triplet": [90, 170, 210],
+                "id": 120021,
+                "name": "Inferior Lateral Ventricle (Right)",
+                "src": "/data/CereBrA/5_rh.Inferior Lateral Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "ILVn-L",
+                "rgb_triplet": [110, 190, 230],
+                "id": 120022,
+                "name": "Inferior Lateral Ventricle (Left)",
+                "src": "/data/CereBrA/56_lh.Inferior Lateral Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "3rdVn",
+            "rgb_triplet": [80, 160, 200],
+            "id": 12003,
+            "name": "Third Ventricle",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "3rdVn-R",
+                "rgb_triplet": [80, 160, 200],
+                "id": 120031,
+                "name": "Third Ventricle (Right)",
+                "src": "/data/CereBrA/29_rh.Third Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "3rdVn-L",
+                "rgb_triplet": [100, 180, 220],
+                "id": 120032,
+                "name": "Third Ventricle (Left)",
+                "src": "/data/CereBrA/80_lh.Third Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "4thVn",
+            "rgb_triplet": [70, 150, 190],
+            "id": 12004,
+            "name": "Fourth Ventricle",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "4thVn-R",
+                "rgb_triplet": [70, 150, 190],
+                "id": 120041,
+                "name": "Fourth Ventricle (Right)",
+                "src": "/data/CereBrA/37_rh.Fourth Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "4thVn-L",
+                "rgb_triplet": [90, 170, 210],
+                "id": 120042,
+                "name": "Fourth Ventricle (Left)",
+                "src": "/data/CereBrA/88_lh.Fourth Ventricle.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          },
+          {
+            "acronym": "OpCh",
+            "rgb_triplet": [110, 190, 230],
+            "id": 12005,
+            "name": "Optic Chiasm",
+            "src": "",
+            "disabled": true,
+            "children": [
+              {
+                "acronym": "OpCh-R",
+                "rgb_triplet": [110, 190, 230],
+                "id": 120051,
+                "name": "Optic Chiasm (Right)",
+                "src": "/data/CereBrA/17_rh.Optic Chiasm.vtp",
+                "disabled": false,
+                "children": []
+              },
+              {
+                "acronym": "OpCh-L",
+                "rgb_triplet": [130, 210, 250],
+                "id": 120052,
+                "name": "Optic Chiasm (Left)",
+                "src": "/data/CereBrA/68_lh.Optic Chiasm.vtp",
+                "disabled": false,
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
