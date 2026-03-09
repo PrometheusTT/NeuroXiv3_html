@@ -46,6 +46,16 @@
           @searchROINeurons="$emit('searchROINeurons', $event)"
         />
       </el-tab-pane>
+      <el-tab-pane
+        label="Firing models"
+        name="firingModels"
+        :lazy="true"
+      >
+        <FiringModelViewer
+          ref="firingModelViewer"
+          @neuronSelect="$emit('neuronView', $event)"
+        />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>
@@ -57,15 +67,17 @@ import NeuronInfo from '@/components/human/NeuronInfo.vue'
 import MultiNeuronsViewer from '@/components/human/MultiNeuronsViewer.vue'
 import { ElTabPane } from 'element-ui/types/tab-pane'
 import NeuronFeatureMap from '@/components/human/NeuronFeatureMap.vue'
+import FiringModelViewer from '@/components/human/FiringModelViewer.vue'
 
 @Component({
-  components: { NeuronFeatureMap, NeuronInfo, NeuronStates, MultiNeuronsViewer }
+  components: { FiringModelViewer, NeuronFeatureMap, NeuronInfo, NeuronStates, MultiNeuronsViewer }
 })
 export default class NeuronDetail extends Vue {
   @Ref('neuronFeatureMap') readonly neuronFeatureMap!: NeuronFeatureMap
   @Ref('neuronStates') readonly neuronStates!: NeuronStates
   @Ref('neuronInfo') readonly neuronInfo!: NeuronInfo
   @Ref('multiNeuronsViewer') readonly multiNeuronsViewer!: MultiNeuronsViewer
+  @Ref('firingModelViewer') readonly firingModelViewer!: FiringModelViewer
   @Prop({ required: true }) loadFirstNeuron!: any
   @Prop({ required: true }) readonly neuronsList!: any[]
   @Prop({ required: true }) readonly isInitialState!: boolean;
@@ -89,6 +101,8 @@ export default class NeuronDetail extends Vue {
       this.$emit('viewNeurons')
     } else if (tab.name === 'neuronFeatureMap') {
       this.$emit('showNeuronMap')
+    } else if (tab.name === 'firingModels') {
+      this.$emit('loadFiringModels')
     }
   }
   handleGeneObj (conditions:any) {

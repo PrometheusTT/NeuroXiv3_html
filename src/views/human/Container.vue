@@ -33,6 +33,7 @@
               @setVisualizedSoma="setVisualizedSoma"
               @changeResolution="changeResolution"
               @generateGeneObj="generateGeneObj"
+              @loadFiringModels="loadFiringModels"
             />
           </div>
         </el-main>
@@ -278,14 +279,15 @@ export default class Container extends Vue {
   private useRawObj: boolean = true;
   private usageExamplesVisible: boolean = false
   private isPreciseSearch:boolean = true
+  private firingModelsLoaded: boolean = false
   // 查询示例数据
   public usageExamples = [
-    ‘Search neurons in SFG (Superior Frontal Gyrus).’,
-    ‘Search neurons in MTG (Middle Temporal Gyrus).’,
-    ‘Search female neurons in IFG.’,
-    ‘Search male neurons in STG.’,
-    ‘Show all neurons from the Temporal Pole (TP).’,
-    ‘Find neurons in the Superior Parietal Lobule (SPL).’
+    'Search neurons in SFG (Superior Frontal Gyrus).',
+    'Search neurons in MTG (Middle Temporal Gyrus).',
+    'Search female neurons in IFG.',
+    'Search male neurons in STG.',
+    'Show all neurons from the Temporal Pole (TP).',
+    'Find neurons in the Superior Parietal Lobule (SPL).'
   ];
   public supportedFeatures = ['Feeling', 'Emotion', 'Motion', 'Attention', 'Memory', 'Cognition', 'Behavior', 'Learning', 'Perception', 'Hearing', 'Metabolism', 'Smell', 'Vision', 'Taste', 'Regulation', 'Sleeping', 'Supporting', 'Eating', 'Pronunciation', 'Visceral activity', 'Coordination', 'Individual survival', 'Racial reproduction', 'Pressure', 'Awareness', 'Regulation of circadian rhythm', 'Secretion activity', 'Water electrolyte balance', 'Drinking', 'Weight', 'Blood sugar balance', 'Temperature', 'Endocrine activity', 'Body balance', 'Eye movements', 'Deliver information', 'Adjusting the core', 'Facial expression', 'Masticatory muscle movement', 'Breathing', 'Cardiovascular activity', 'Digestion', 'Immunity', 'Lingual muscle movement'];
 
@@ -298,6 +300,25 @@ export default class Container extends Vue {
 
   public handleCriteriaEmpty () {
     this.isInitialState = true
+  }
+
+  /**
+   * Load firing model data for the FiringModelViewer tab.
+   * Fetches from /v3/human_firing_models and passes to the viewer component.
+   */
+  private async loadFiringModels () {
+    if (this.firingModelsLoaded) return
+    try {
+      const resp = await fetch('/v3/api/v3/human_firing_models?limit=10000')
+      const json = await resp.json()
+      if (json.code === 0 && json.data && json.data.neurons) {
+        await this.$nextTick()
+        this.neuronDetail.firingModelViewer.setData(json.data.neurons)
+        this.firingModelsLoaded = true
+      }
+    } catch (e) {
+      console.error('Failed to load firing models:', e)
+    }
   }
 
   /**
