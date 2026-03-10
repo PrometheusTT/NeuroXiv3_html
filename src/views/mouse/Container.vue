@@ -678,44 +678,74 @@ export default class Container extends Vue {
           case 'execute_search': {
             // Trigger a neuron search with given criteria
             const criteria = params.criteria || {}
-            if (!criteria['brain_atlas']) {
-              criteria['brain_atlas'] = [this.$store.state.atlas.toString()]
+            const inlineData = params.neuron_data || []
+            if (inlineData.length > 0) {
+              // Use inline data from the agent (KG-sourced, no DB round-trip)
+              const neurons = this._kgDataToNeuronList(inlineData)
+              this.neuronList.setListData(neurons)
+              this.neuronsList = neurons
+              // Auto-select the first neuron
+              if (neurons.length > 0) {
+                try { await this.updateCurrentNeuronInfo(neurons[0]) } catch (e) { console.warn('auto-select failed', e) }
+              }
+            } else {
+              if (!criteria['brain_atlas']) {
+                criteria['brain_atlas'] = [this.$store.state.atlas.toString()]
+              }
+              // eslint-disable-next-line camelcase
+              const { neurons, basic_info, morpho_info, plot, proj_info } = await searchNeurons(document.body, { criteria }).start()
+              this.neuronList.setListData(neurons)
+              this.neuronsList = neurons
+              this.neuronDetail.selectedTab = 'neuronStates'
+              this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
+              await this.$nextTick()
+              this.neuronDetail.neuronStates.featurePlot.renderChart()
+              this.neuronDetail.neuronStates.histogramBars.renderChart()
             }
-            // eslint-disable-next-line camelcase
-            const { neurons, basic_info, morpho_info, plot, proj_info } = await searchNeurons(document.body, { criteria }).start()
-            this.neuronList.setListData(neurons)
-            this.neuronsList = neurons
-            this.neuronDetail.selectedTab = 'neuronStates'
-            this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
-            await this.$nextTick()
-            this.neuronDetail.neuronStates.featurePlot.renderChart()
-            this.neuronDetail.neuronStates.histogramBars.renderChart()
             break
           }
           case 'display_neurons': {
-            // Display specific neurons by ID list
+            // Display specific neurons — prefer inline data, fall back to DB search
+            const inlineData = params.neuron_data || []
             const idList = params.neuron_ids || []
-            if (idList.length > 0) {
-              // eslint-disable-next-line camelcase
-              const { neurons, basic_info, morpho_info, plot, proj_info } = await searchNeurons(document.body, { id_list: idList }).start()
-              this.neuronList.setListData(neurons)
-              this.neuronsList = neurons
+            let displayedNeurons: any[] = []
+            if (inlineData.length > 0) {
+              displayedNeurons = this._kgDataToNeuronList(inlineData)
+            } else if (idList.length > 0) {
+              try {
+                // eslint-disable-next-line camelcase
+                const { neurons } = await searchNeurons(document.body, { id_list: idList }).start()
+                displayedNeurons = neurons
+              } catch (e) {
+                console.warn('display_neurons: DB lookup failed, showing IDs only', e)
+                displayedNeurons = idList.map((nid: string) => ({
+                  id: nid, data_source: '', img_src: '', celltype: '',
+                  brain_atlas: 'CCFv3', has_dendrite: 0, has_axon: 0,
+                  has_apical: 0, has_arbor: 0, has_local: 0, hemisphere: ''
+                }))
+              }
+            }
+            if (displayedNeurons.length > 0) {
+              this.neuronList.setListData(displayedNeurons)
+              this.neuronsList = displayedNeurons
+              // Auto-select the first neuron to show its detail
+              try {
+                await this.updateCurrentNeuronInfo(displayedNeurons[0])
+              } catch (e) {
+                console.warn('display_neurons: auto-select first neuron failed', e)
+              }
             }
             break
           }
-          case 'show_neuron_detail': {
-            // Load a specific neuron's detail view
-            const neuronId = params.neuron_id
-            if (neuronId) {
-              await this.updateCurrentNeuronInfo({ id: neuronId })
-            }
-            break
-          }
+          case 'show_neuron_detail':
           case 'show_neuron_3d': {
-            // Load neuron in 3D viewer by triggering detail view
             const neuronId = params.neuron_id
             if (neuronId) {
-              await this.updateCurrentNeuronInfo({ id: neuronId })
+              try {
+                await this.updateCurrentNeuronInfo({ id: neuronId })
+              } catch (e) {
+                console.warn(`${action}: Could not load neuron ${neuronId} from backend`, e)
+              }
             }
             break
           }
@@ -731,6 +761,30 @@ export default class Container extends Vue {
             }
             break
           }
+          case 'compare_neurons': {
+            // Compare neurons side-by-side — load them into the multi-neuron viewer
+            const compareIds = params.neuron_ids || []
+            if (compareIds.length > 0) {
+              try {
+                const { neurons } = await searchNeurons(document.body, { id_list: compareIds }).start()
+                this.neuronList.setListData(neurons)
+                this.neuronsList = neurons
+              } catch (e) {
+                console.warn('compare_neurons: DB lookup failed', e)
+              }
+            }
+            break
+          }
+          case 'show_waveform': {
+            // Waveform visualization — log for now (no dedicated waveform panel yet)
+            console.log('show_waveform action received:', params)
+            break
+          }
+          case 'show_firing_model': {
+            // Firing model display — log for now (handled via SVG in AISearchWindow)
+            console.log('show_firing_model action received:', params)
+            break
+          }
           default:
             console.warn('Unknown frontend action:', action)
         }
@@ -738,6 +792,28 @@ export default class Container extends Vue {
         console.error('Frontend action failed:', action, e)
       }
     }
+  }
+
+  /**
+   * Convert KG-sourced neuron data into the format expected by the neuron list.
+   */
+  private _kgDataToNeuronList (kgData: any[]): any[] {
+    return kgData.map((n: any) => {
+      const nid = n.id || n.neuron_id || ''
+      return {
+        id: nid,
+        data_source: n.data_source || nid.split('_')[0] || '',
+        img_src: n.img_src || (nid ? `/data/${nid}/Img_Thumbnail_YZ.png` : ''),
+        celltype: n.celltype || n.brain_region || n.region || '',
+        brain_atlas: n.brain_atlas || 'CCFv3',
+        has_dendrite: n.has_dendrite ?? (n.den_length ? 1 : 0),
+        has_axon: n.has_axon ?? (n.axon_length ? 1 : 0),
+        has_apical: n.has_apical ?? 0,
+        has_arbor: n.has_arbor ?? 0,
+        has_local: n.has_local ?? 0,
+        hemisphere: n.hemisphere || ''
+      }
+    })
   }
 
   private async ClearMessage (func: any = () => {}) {

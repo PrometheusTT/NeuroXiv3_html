@@ -101,6 +101,8 @@ export default class NeuronScene extends Vue {
   private geneDataMap!: Map<any, any>
   private sliceMap!: Map<any, any>
   private centerShift!: THREE.Vector3
+  // Target position for human neuron OBJs (brain region centroid in VTK coords)
+  private neuronTargetPos: THREE.Vector3 | null = null
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
   // private scene!: THREE.Scene
@@ -196,6 +198,26 @@ export default class NeuronScene extends Vue {
       } else {
         await this.loadVtk(data)
       }
+    }
+  }
+
+  /**
+   * Set the target position for human neuron OBJs (brain region centroid in VTK coordinates).
+   * Call this before loading neuron OBJ files so they get positioned at the correct brain region.
+   */
+  public setNeuronTargetPos (centroid: number[] | null, jitter: boolean = false) {
+    if (centroid && centroid.length >= 3) {
+      let x = centroid[0]; let y = centroid[1]; let z = centroid[2]
+      // Add small jitter to avoid overlapping neurons in multi-viewer
+      if (jitter) {
+        const offset = 8
+        x += (Math.random() - 0.5) * offset
+        y += (Math.random() - 0.5) * offset
+        z += (Math.random() - 0.5) * offset
+      }
+      this.neuronTargetPos = new THREE.Vector3(x, y, z)
+    } else {
+      this.neuronTargetPos = null
     }
   }
 
@@ -426,15 +448,27 @@ export default class NeuronScene extends Vue {
               // }
             }
           }
-          obj.children[0].geometry.translate(this.centerShift.x, this.centerShift.y, this.centerShift.z)
+          // Human neuron OBJs are in patient-local space, not atlas space.
+          // Center the OBJ on itself, then translate to the brain region centroid.
+          if (this.ifNeuron(data)) {
+            const geom = obj.children[0].geometry
+            geom.computeBoundingBox()
+            const objCenter = new THREE.Vector3()
+            geom.boundingBox.getCenter(objCenter)
+            geom.translate(-objCenter.x, -objCenter.y, -objCenter.z)
+            // Position at brain region centroid if available
+            if (this.neuronTargetPos) {
+              geom.translate(
+                this.neuronTargetPos.x + this.centerShift.x,
+                this.neuronTargetPos.y + this.centerShift.y,
+                this.neuronTargetPos.z + this.centerShift.z
+              )
+            }
+          } else {
+            obj.children[0].geometry.translate(this.centerShift.x, this.centerShift.y, this.centerShift.z)
+          }
           // 绕x轴翻转180度，与脑一致
           obj.children[0].geometry.rotateX(Math.PI)
-          // obj.children[0].geometry.scale(0.001, 0.001, 0.001)
-          // const el = this.$refs.NeuronScene as Element
-          // material.resolution.set(el.clientWidth, el.clientHeight)
-          // let geometry = new LineSegmentsGeometry()
-          // geometry.fromLineSegments(obj.children[0])
-          // let mesh = new LineSegments2(geometry, material)
           if (this.neuronDataMap.has(data.id)) {
             this.unloadObj(data.id)
           }
@@ -444,7 +478,6 @@ export default class NeuronScene extends Vue {
           obj.children[0].name = data.name
           this.neuronDataMap.set(data.id, obj)
           this.scene.add(obj)
-          // console.log(obj)
           this.resetRender()
           resolve(true)
         },
@@ -477,7 +510,22 @@ export default class NeuronScene extends Vue {
             })
           }
 
-          obj.children[0].geometry.translate(this.centerShift.x, this.centerShift.y, this.centerShift.z)
+          if (this.ifNeuron(data)) {
+            const geom = obj.children[0].geometry
+            geom.computeBoundingBox()
+            const objCenter = new THREE.Vector3()
+            geom.boundingBox.getCenter(objCenter)
+            geom.translate(-objCenter.x, -objCenter.y, -objCenter.z)
+            if (this.neuronTargetPos) {
+              geom.translate(
+                this.neuronTargetPos.x + this.centerShift.x,
+                this.neuronTargetPos.y + this.centerShift.y,
+                this.neuronTargetPos.z + this.centerShift.z
+              )
+            }
+          } else {
+            obj.children[0].geometry.translate(this.centerShift.x, this.centerShift.y, this.centerShift.z)
+          }
           // 绕x轴翻转180度，与脑一致
           obj.children[0].geometry.rotateX(Math.PI)
           if (this.geneDataMap.has(data.id)) {
@@ -521,7 +569,23 @@ export default class NeuronScene extends Vue {
               obj.children[0].material.opacity = 0.3
             }
           }
-          obj.children[0].geometry.translate(this.centerShift.x, this.centerShift.y, this.centerShift.z)
+          // Human neuron OBJs: center on itself, then position at region centroid
+          if (this.ifNeuron(data)) {
+            const geom = obj.children[0].geometry
+            geom.computeBoundingBox()
+            const objCenter = new THREE.Vector3()
+            geom.boundingBox.getCenter(objCenter)
+            geom.translate(-objCenter.x, -objCenter.y, -objCenter.z)
+            if (this.neuronTargetPos) {
+              geom.translate(
+                this.neuronTargetPos.x + this.centerShift.x,
+                this.neuronTargetPos.y + this.centerShift.y,
+                this.neuronTargetPos.z + this.centerShift.z
+              )
+            }
+          } else {
+            obj.children[0].geometry.translate(this.centerShift.x, this.centerShift.y, this.centerShift.z)
+          }
           // 绕x轴翻转180度，与脑一致
           obj.children[0].geometry.rotateX(Math.PI)
           if (this.neuronDataMap.has(data.id)) {
@@ -533,10 +597,7 @@ export default class NeuronScene extends Vue {
           obj.children[0].name = data.name
           this.neuronDataMap.set(data.id, obj)
           obj.visible = isVisible
-          // this.storeInitialState(obj)
           this.scene.add(obj)
-          // console.log(obj)
-          // this.loadedObj = obj // 保存加载的对象
           this.resetRender()
           resolve(true)
         },
