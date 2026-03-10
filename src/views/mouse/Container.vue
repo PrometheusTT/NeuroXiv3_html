@@ -156,6 +156,7 @@
         :search-mode="searchMode"
         @AISearch="AISearch"
         @update:searchMode="searchMode = $event"
+        @frontendActions="executeFrontendActions"
       />
       <span
         slot="footer"
@@ -658,6 +659,83 @@ export default class Container extends Vue {
       } catch (e) {
         this.aiSearchWindow.addResponseFromAPI('There are some issues, please try again later.')
         console.error(e)
+      }
+    }
+  }
+
+  /**
+   * Execute frontend actions returned by the OpenClaw ReAct agent.
+   * Each action has an 'action' field and 'params' with action-specific data.
+   */
+  private async executeFrontendActions (actions: any[]) {
+    for (const actionObj of actions) {
+      const action = actionObj.action
+      const params = actionObj.params || {}
+      console.log('Executing frontend action:', action, params)
+
+      try {
+        switch (action) {
+          case 'execute_search': {
+            // Trigger a neuron search with given criteria
+            const criteria = params.criteria || {}
+            if (!criteria['brain_atlas']) {
+              criteria['brain_atlas'] = [this.$store.state.atlas.toString()]
+            }
+            // eslint-disable-next-line camelcase
+            const { neurons, basic_info, morpho_info, plot, proj_info } = await searchNeurons(document.body, { criteria }).start()
+            this.neuronList.setListData(neurons)
+            this.neuronsList = neurons
+            this.neuronDetail.selectedTab = 'neuronStates'
+            this.neuronDetail.neuronStates.neuronStatesData = { basic_info: basic_info.counts, morpho_info, plot, proj_info }
+            await this.$nextTick()
+            this.neuronDetail.neuronStates.featurePlot.renderChart()
+            this.neuronDetail.neuronStates.histogramBars.renderChart()
+            break
+          }
+          case 'display_neurons': {
+            // Display specific neurons by ID list
+            const idList = params.neuron_ids || []
+            if (idList.length > 0) {
+              // eslint-disable-next-line camelcase
+              const { neurons, basic_info, morpho_info, plot, proj_info } = await searchNeurons(document.body, { id_list: idList }).start()
+              this.neuronList.setListData(neurons)
+              this.neuronsList = neurons
+            }
+            break
+          }
+          case 'show_neuron_detail': {
+            // Load a specific neuron's detail view
+            const neuronId = params.neuron_id
+            if (neuronId) {
+              await this.updateCurrentNeuronInfo({ id: neuronId })
+            }
+            break
+          }
+          case 'show_neuron_3d': {
+            // Load neuron in 3D viewer by triggering detail view
+            const neuronId = params.neuron_id
+            if (neuronId) {
+              await this.updateCurrentNeuronInfo({ id: neuronId })
+            }
+            break
+          }
+          case 'render_chart': {
+            // Switch to neuron stats tab to show charts
+            this.neuronDetail.selectedTab = 'neuronStates'
+            await this.$nextTick()
+            if (this.neuronDetail.neuronStates.featurePlot) {
+              this.neuronDetail.neuronStates.featurePlot.renderChart()
+            }
+            if (this.neuronDetail.neuronStates.histogramBars) {
+              this.neuronDetail.neuronStates.histogramBars.renderChart()
+            }
+            break
+          }
+          default:
+            console.warn('Unknown frontend action:', action)
+        }
+      } catch (e) {
+        console.error('Frontend action failed:', action, e)
       }
     }
   }

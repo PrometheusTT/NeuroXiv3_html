@@ -141,6 +141,52 @@
               </div>
             </div>
 
+            <!-- Tool Calls - collapsible, only shown when present -->
+            <div v-if="message.toolCalls && message.toolCalls.length > 0" class="collapsible-section">
+              <div
+                class="section-header"
+                @click="toggleSection(index, 'tools')"
+              >
+                <svg
+                  class="chevron-icon"
+                  :class="{ 'chevron-open': isSectionOpen(index, 'tools') }"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="section-title">Tool Calls ({{ message.toolCalls.length }})</span>
+              </div>
+              <div
+                class="section-body"
+                :class="{
+                  'section-collapsed': !isSectionOpen(index, 'tools'),
+                  'section-expanded': isSectionOpen(index, 'tools')
+                }"
+              >
+                <div class="section-content tool-calls-list">
+                  <div
+                    v-for="(tc, tcIdx) in message.toolCalls"
+                    :key="tcIdx"
+                    class="tool-call-item"
+                    :class="{ 'tool-success': tc.success, 'tool-fail': !tc.success }"
+                  >
+                    <span class="tool-icon">{{ tc.success ? '✓' : '✗' }}</span>
+                    <span class="tool-name">{{ tc.tool }}</span>
+                    <span v-if="tc.row_count" class="tool-rows">{{ tc.row_count }} rows</span>
+                    <span v-if="tc.is_frontend_action" class="tool-badge">UI</span>
+                  </div>
+                </div>
+                <div
+                  v-if="!isSectionOpen(index, 'tools')"
+                  class="fade-overlay"
+                  @click="toggleSection(index, 'tools')"
+                />
+              </div>
+            </div>
+
             <!-- Summary - always visible -->
             <div class="summary-section">
               <div class="section-title-static">Summary</div>
@@ -246,6 +292,14 @@ interface FiringModelSvg {
   svg_content: string | null
 }
 
+interface ToolCallInfo {
+  tool: string
+  success: boolean
+  row_count?: number
+  is_frontend_action?: boolean
+  exec_time?: number
+}
+
 interface StructuredMessage {
   text: string
   isUser: Boolean
@@ -255,6 +309,7 @@ interface StructuredMessage {
   evidenceHtml?: string
   summaryHtml?: string
   svgs?: FiringModelSvg[]
+  toolCalls?: ToolCallInfo[]
 }
 
 @Component
@@ -339,6 +394,7 @@ export default class AISearchWindow extends Vue {
         const evidenceHtml = data.evidence_data ? md.render(data.evidence_data) : ''
         const summaryHtml = data.summary ? md.render(data.summary) : ''
         const svgs: FiringModelSvg[] = (data.firing_model_svgs || []).filter((s: FiringModelSvg) => s.svg_content)
+        const toolCalls: ToolCallInfo[] = data.tool_calls || []
 
         this.messages.push({
           text: '',
@@ -348,8 +404,14 @@ export default class AISearchWindow extends Vue {
           reasoningHtml,
           evidenceHtml,
           summaryHtml,
-          svgs
+          svgs,
+          toolCalls
         })
+
+        // Emit frontend actions for Container to execute
+        if (data.frontend_actions && data.frontend_actions.length > 0) {
+          this.$emit('frontendActions', data.frontend_actions)
+        }
       } else {
         // Generic object, just stringify and render
         const htmlContent = md.render(JSON.stringify(data, null, 2))
@@ -795,5 +857,50 @@ pre, code {
 .svg-container >>> svg {
   max-width: 100%;
   height: auto;
+}
+
+/* Tool calls list */
+.tool-calls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tool-call-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.82em;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.tool-success .tool-icon {
+  color: #28a745;
+}
+
+.tool-fail .tool-icon {
+  color: #dc3545;
+}
+
+.tool-name {
+  font-family: monospace;
+  font-weight: 500;
+  color: #333;
+}
+
+.tool-rows {
+  color: #888;
+  font-size: 0.9em;
+}
+
+.tool-badge {
+  background: #007bff;
+  color: white;
+  font-size: 0.7em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
 }
 </style>
