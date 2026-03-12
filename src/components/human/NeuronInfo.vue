@@ -244,7 +244,7 @@ import { showLoading, increaseLoadingCount, decreaseLoadingCount, LoadingZero } 
 
 import neuronViewerBaseDataFMost from './surf_tree_fmost.json'
 
-import neuronViewerBaseData from './surf_tree_ccf-me.json'
+import neuronViewerBaseData from './surf_tree_human.json'
 const rootId = neuronViewerBaseData[0].id
 const rootIdFMost = neuronViewerBaseDataFMost[0].id
 
@@ -281,8 +281,8 @@ export default class NeuronInfo extends Vue {
   @Ref('Soma') Soma!: Soma
   @Ref('brainTree') brainTree!: any
   public neuronViewerReconstructionData: any = []
-  public neuronViewerData: any = this.$store.state.atlas === 'CCFv3' ? neuronViewerBaseData : neuronViewerBaseDataFMost // neuronViewerBaseData
-  private rootId: number = this.$store.state.atlas === 'CCFv3' ? rootId : rootIdFMost // rootId
+  public neuronViewerData: any = neuronViewerBaseData // CereBrA human atlas
+  private rootId: number = rootId
   private activeNames2: any = ['brain']
   private sagittalMax: number = 11375 // 18.20
   private AxialMax: number = 7975 // 12.76
@@ -374,6 +374,66 @@ export default class NeuronInfo extends Vue {
     const rootNode = this.brainTree.getNode(this.neuronViewerData[0].id)
     if (rootNode) {
       this.brainTree.setChecked(rootNode.data.id, true, true) // 确保根节点选中
+    }
+  }
+
+  /**
+   * Auto-highlight a brain region in the atlas tree by matching the acronym.
+   * Finds nodes whose acronym matches (or starts with) the given region, checks them,
+   * and expands their parent nodes so the region is visible and loaded.
+   */
+  /**
+   * Look up the centroid of a brain region from the atlas tree by acronym.
+   * Returns [x, y, z] in VTK coordinates or null if not found.
+   */
+  public getRegionCentroid (region: string): number[] | null {
+    if (!region) return null
+    const regionUpper = region.toUpperCase()
+    let result: number[] | null = null
+    const search = (nodes: any[]) => {
+      for (const node of nodes) {
+        if ((node.acronym || '').toUpperCase() === regionUpper && node.centroid) {
+          result = node.centroid
+          return
+        }
+        if (node.children) search(node.children)
+        if (result) return
+      }
+    }
+    search(this.neuronViewerData)
+    return result
+  }
+
+  public highlightBrainRegion (region: string) {
+    if (!region || !this.brainTree) return
+    const regionUpper = region.toUpperCase()
+    const matchIds: number[] = []
+    const findMatches = (nodes: any[]) => {
+      for (const node of nodes) {
+        const acr = (node.acronym || '').toUpperCase()
+        // Match exact acronym or parent acronym (e.g. "MFG" matches all MFG children)
+        if (acr === regionUpper) {
+          // Collect leaf children that have actual VTK src
+          const collectLeaves = (n: any) => {
+            if (!n.children || n.children.length === 0) {
+              if (n.src && !n.disabled) matchIds.push(n.id)
+            } else {
+              n.children.forEach(collectLeaves)
+            }
+          }
+          if (node.src && !node.disabled) {
+            matchIds.push(node.id)
+          }
+          if (node.children) node.children.forEach(collectLeaves)
+          return
+        }
+        if (node.children) findMatches(node.children)
+      }
+    }
+    findMatches(this.neuronViewerData)
+    for (const id of matchIds) {
+      this.brainTree.setChecked(id, true, false)
+      this.expandParentNodes(id)
     }
   }
 

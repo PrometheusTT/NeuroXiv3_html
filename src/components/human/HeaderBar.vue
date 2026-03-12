@@ -33,7 +33,7 @@
           class="action"
           @click="$emit('clickSearchByLLMButton')"
         >
-          AIPOM
+          AIPOM-CoT
         </el-button>
         <el-upload
           action=""
@@ -50,6 +50,14 @@
             Upload neuron
           </el-button>
         </el-upload>
+        <el-button
+          type="primary"
+          plain
+          class="action"
+          @click="openExternalPage"
+        >
+          NeuroXiv-KG
+        </el-button>
         <!--        <el-button-->
         <!--          type="primary"-->
         <!--          plain-->
@@ -111,10 +119,19 @@ import NeuronLogo from '@/components/common/NeuronLogo.vue'
 export default class HeaderBar extends RouterHelper {
     @Prop({ default: true }) private showVideoButton!: boolean;
     @Prop({ default: 'left' }) private actionsAlignment!: string;
+    @Prop({ default: 'https://kg.neuroxiv.org/browser/' }) private externalUrl!: string;
     private showVideoDialog: boolean = false;
 
     private uploadNeuron (param: any) {
       this.$emit('clickUploadNeuron', param)
+    }
+
+    private openExternalPage () {
+      if (!this.externalUrl) {
+        this.$message('No external URL configured.')
+        return
+      }
+      window.open(this.externalUrl, '_blank')
     }
 
     openJupyterNotebook () {
