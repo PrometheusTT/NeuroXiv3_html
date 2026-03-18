@@ -304,6 +304,7 @@ export default class Container extends Vue {
   private usageExamplesVisible: boolean = false
   private isPreciseSearch:boolean = true
   private searchMode: 'search' | 'agentic' = 'agentic'
+  private aipomSessionId: string = ''
   public floatingTags: any[] = []
   // 查询示例数据
   public usageExamples = [
@@ -651,9 +652,12 @@ export default class Container extends Vue {
     }
     if (searchIntent === 'agentic') {
       try {
-        let questionJson = { 'question': question, 'search_mode': searchIntent }
+        let questionJson = { 'question': question, 'search_mode': searchIntent, 'session_id': this.aipomSessionId }
         const agenticSearchAnswer = await AgenticSearch(document.body, questionJson).start()
         console.log('agenticSearchAnswer', agenticSearchAnswer)
+        if (agenticSearchAnswer && agenticSearchAnswer.session_id) {
+          this.aipomSessionId = agenticSearchAnswer.session_id
+        }
         this.aiSearchWindow.addResponseFromAPI(agenticSearchAnswer)
         func()
       } catch (e) {

@@ -306,7 +306,7 @@ function searchROINeuron (loadingTarget: HTMLElement | null, roiParameter: strin
   return r
 }
 
-function AgenticSearch(loadingTarget: HTMLElement | null, questionJson: { question: string }, requestOptions: RequestOptions = {}) {
+function AgenticSearch(loadingTarget: HTMLElement | null, questionJson: { question: string; search_mode?: string; session_id?: string }, requestOptions: RequestOptions = {}) {
   const url = `${REQUEST_NAME_SPACE}agentic_search`
   const options: RequestInit = {
     method: 'POST',

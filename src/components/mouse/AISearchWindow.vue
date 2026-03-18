@@ -187,6 +187,63 @@
               </div>
             </div>
 
+            <!-- Publication Figures - shown when generated -->
+            <div v-if="message.figures && message.figures.length > 0" class="collapsible-section">
+              <div
+                class="section-header"
+                @click="toggleSection(index, 'figures')"
+              >
+                <svg
+                  class="chevron-icon"
+                  :class="{ 'chevron-open': isSectionOpen(index, 'figures') }"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+                <span class="section-title">Publication Figures ({{ message.figures.length }})</span>
+              </div>
+              <div
+                class="section-body"
+                :class="{
+                  'section-collapsed': !isSectionOpen(index, 'figures'),
+                  'section-expanded': isSectionOpen(index, 'figures')
+                }"
+              >
+                <div class="section-content figures-gallery">
+                  <div
+                    v-for="(fig, figIdx) in message.figures"
+                    :key="figIdx"
+                    class="figure-item"
+                  >
+                    <img
+                      :src="'data:image/png;base64,' + fig.base64"
+                      :alt="fig.caption || 'Publication figure'"
+                      class="figure-image"
+                      @click="openFigureFullscreen(fig)"
+                    >
+                    <div class="figure-caption">
+                      <span class="figure-label">Figure {{ figIdx + 1 }}.</span>
+                      {{ fig.caption }}
+                    </div>
+                    <a
+                      :href="getAipomBaseUrl() + '/figure/' + fig.figure_id"
+                      target="_blank"
+                      class="figure-download"
+                      download
+                    >Download high-res PNG (300 DPI)</a>
+                  </div>
+                </div>
+                <div
+                  v-if="!isSectionOpen(index, 'figures')"
+                  class="fade-overlay"
+                  @click="toggleSection(index, 'figures')"
+                />
+              </div>
+            </div>
+
             <!-- Summary - always visible -->
             <div class="summary-section">
               <div class="section-title-static">Summary</div>
@@ -300,6 +357,14 @@ interface ToolCallInfo {
   exec_time?: number
 }
 
+interface FigureInfo {
+  figure_id: string
+  url: string
+  base64: string
+  caption: string
+  figure_type: string
+}
+
 interface StructuredMessage {
   text: string
   isUser: Boolean
@@ -310,6 +375,7 @@ interface StructuredMessage {
   summaryHtml?: string
   svgs?: FiringModelSvg[]
   toolCalls?: ToolCallInfo[]
+  figures?: FigureInfo[]
 }
 
 @Component
@@ -331,6 +397,21 @@ export default class AISearchWindow extends Vue {
   public isSectionOpen (messageIndex: number, section: string): boolean {
     const key = `${messageIndex}_${section}`
     return !!this.expandedSections[key]
+  }
+
+  public getAipomBaseUrl (): string {
+    return process.env.VUE_APP_AIPOM_URL || 'http://localhost:8100'
+  }
+
+  public openFigureFullscreen (fig: FigureInfo) {
+    const w = window.open('', '_blank')
+    if (w) {
+      w.document.write(`<!DOCTYPE html><html><head><title>${fig.caption || 'Figure'}</title>
+        <style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5}
+        img{max-width:95vw;max-height:95vh;box-shadow:0 4px 20px rgba(0,0,0,.15)}</style></head>
+        <body><img src="data:image/png;base64,${fig.base64}" alt="${fig.caption}"></body></html>`)
+      w.document.close()
+    }
   }
 
   public scrollToBottom () {
@@ -395,6 +476,7 @@ export default class AISearchWindow extends Vue {
         const summaryHtml = data.summary ? md.render(data.summary) : ''
         const svgs: FiringModelSvg[] = (data.firing_model_svgs || []).filter((s: FiringModelSvg) => s.svg_content)
         const toolCalls: ToolCallInfo[] = data.tool_calls || []
+        const figures: FigureInfo[] = data.figures || []
 
         this.messages.push({
           text: '',
@@ -405,7 +487,8 @@ export default class AISearchWindow extends Vue {
           evidenceHtml,
           summaryHtml,
           svgs,
-          toolCalls
+          toolCalls,
+          figures
         })
 
         // Emit frontend actions for Container to execute
@@ -902,5 +985,59 @@ pre, code {
   padding: 1px 5px;
   border-radius: 3px;
   font-weight: 600;
+}
+
+/* Publication figures gallery */
+.figures-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.figure-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.figure-image {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.figure-image:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.figure-caption {
+  margin-top: 8px;
+  font-size: 0.88em;
+  color: #444;
+  line-height: 1.4;
+  text-align: justify;
+}
+
+.figure-label {
+  font-weight: 700;
+  color: #222;
+}
+
+.figure-download {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.8em;
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.figure-download:hover {
+  text-decoration: underline;
 }
 </style>
