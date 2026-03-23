@@ -1,59 +1,130 @@
 <template>
   <div class="chat-window">
-    <div class="chat-messages">
+    <!-- Welcome state -->
+    <div
+      v-if="messages.length === 0"
+      class="welcome-state"
+    >
+      <div class="welcome-icon">
+        <img
+          src="../../../public/img/AIPOM.png"
+          alt="AIPOM"
+          class="welcome-avatar"
+        >
+      </div>
+      <h3 class="welcome-title">NeuroXiv Search</h3>
+      <p class="welcome-subtitle">
+        Search neurons using natural language queries.
+      </p>
+    </div>
+
+    <!-- Chat messages -->
+    <div
+      v-else
+      class="chat-messages"
+    >
       <div
         v-for="(message, index) in messages"
         :key="index"
-        class="message-container"
-        :class="{'user-message-container': message.isUser, 'system-message-container': !message.isUser}"
+        class="message-row"
+        :class="{
+          'message-row--user': message.isUser,
+          'message-row--system': !message.isUser
+        }"
       >
-        <img
-          v-if="!message.isUser"
-          src="../../../public/img/AIPOM.png"
-          alt="System Avatar"
-          class="avatar system-avatar"
-        >
         <div
-          class="message-bubble"
-          :class="{'user-message': message.isUser, 'system-message': !message.isUser}"
+          v-if="!message.isUser"
+          class="avatar-wrapper"
         >
-          <span v-html="message.text" />
+          <img
+            src="../../../public/img/AIPOM.png"
+            alt="AIPOM"
+            class="avatar"
+          >
+        </div>
+
+        <div
+          class="message-body"
+          :class="{
+            'message-body--user': message.isUser,
+            'message-body--system': !message.isUser
+          }"
+        >
+          <div
+            class="plain-text"
+            v-html="message.text"
+          />
           <button
             v-if="isPythonCode(message.text)"
             class="execute-code-btn"
             @click="executePythonCode(message.text)"
+            title="Run code"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="icon-play"
-            >
-              <polygon points="5 3 19 12 5 21 5 3" />
+            <svg viewBox="0 0 20 20" fill="currentColor" class="play-icon">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
             </svg>
           </button>
-          <div class="message-timestamp">
-            {{ message.timestamp }}
+          <div class="message-time">{{ message.timestamp }}</div>
+        </div>
+
+        <div
+          v-if="message.isUser"
+          class="avatar-wrapper"
+        >
+          <img
+            src="../../../public/img/User.png"
+            alt="User"
+            class="avatar"
+          >
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div
+        v-if="isLoading"
+        class="message-row message-row--system"
+      >
+        <div class="avatar-wrapper">
+          <img
+            src="../../../public/img/AIPOM.png"
+            alt="AIPOM"
+            class="avatar"
+          >
+        </div>
+        <div class="message-body message-body--system">
+          <div class="typing-indicator">
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+            <span class="typing-dot" />
           </div>
         </div>
-        <img
-          v-if="message.isUser"
-          src="../../../public/img/User.png"
-          alt="User Avatar"
-          class="avatar user-avatar"
-        >
       </div>
     </div>
-    <input
-      v-model="userInput"
-      placeholder="[search]:<your query>"
-      class="input-box"
-      @keyup.enter="$emit('AISearch')"
-    >
+
+    <!-- Input area -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea
+          ref="inputBox"
+          v-model="userInput"
+          placeholder="Search neurons..."
+          class="input-box"
+          rows="1"
+          @keydown.enter.exact="handleEnter"
+          @input="autoResize"
+        />
+        <button
+          class="send-btn"
+          :class="{ 'send-btn--active': userInput.trim().length > 0 }"
+          :disabled="!userInput.trim()"
+          @click="$emit('AISearch')"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -95,12 +166,30 @@ export default class AISearchWindow extends Vue {
   public lastInput: string = ''
   private Conditions: any = searchConditions.children
   public code: string = ''
+  public isLoading: boolean = false
+
+  private handleEnter (e: KeyboardEvent) {
+    if (!e.shiftKey) {
+      e.preventDefault()
+      if (this.userInput.trim()) {
+        this.$emit('AISearch')
+      }
+    }
+  }
+
+  private autoResize () {
+    const el = this.$refs.inputBox as HTMLTextAreaElement
+    if (el) {
+      el.style.height = 'auto'
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+    }
+  }
 
   public scrollToBottom () {
     this.$nextTick(() => {
       const container = this.$el.querySelector('.chat-messages')
       if (container) {
-        container.scrollTop = container.scrollHeight
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
       }
     })
   }
@@ -118,6 +207,11 @@ export default class AISearchWindow extends Vue {
       })
       this.lastInput = userMessage
       this.userInput = ''
+      this.isLoading = true
+      this.$nextTick(() => {
+        const el = this.$refs.inputBox as HTMLTextAreaElement
+        if (el) el.style.height = 'auto'
+      })
       this.scrollToBottom()
     }
   }
@@ -139,6 +233,7 @@ export default class AISearchWindow extends Vue {
   }
 
   public addResponseFromAPI (data: any) {
+    this.isLoading = false
     const currentTime = new Date()
     const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')
 
@@ -148,18 +243,23 @@ export default class AISearchWindow extends Vue {
       })
     } else if (Array.isArray(data) && data.length > 0) {
       // eslint-disable-next-line camelcase
-      data.forEach((article: { title: string; authors: string;relevance_score: number; related_content: string;summary: string; link: string }, index: number) => {
-        let responseMessage = `<span style="font-weight: bold; font-size: larger;">${index + 1}. Article Title:</span> ${article.title}<br>
-          <span style="font-weight: bold; font-size: larger;">Authors:</span> ${article.authors}<br>
-          <span style="font-weight: bold; font-size: larger;">Relevance Score:</span> ${article.relevance_score}<br>
-          <span style="font-weight: bold; font-size: larger;">Related Content:</span> ${article.related_content}<br>
-          <span style="font-weight: bold; font-size: larger;">Summary:</span> ${article.summary}<br>
-          <span style="font-weight: bold; font-size: larger;">Link:</span> <a href="${article.link}" target="_blank" style="text-decoration: underline; color: #007bff">${article.link}</a>`
+      data.forEach((article: { title: string; authors: string; relevance_score: number; related_content: string; summary: string; link: string }, index: number) => {
+        let responseMessage = `<div class="article-result">
+          <div class="article-index">${index + 1}</div>
+          <div class="article-body">
+            <div class="article-title">${article.title}</div>
+            <div class="article-meta">${article.authors}</div>
+            <div class="article-score">Relevance: ${article.relevance_score}</div>
+            <div class="article-summary">${article.summary}</div>
+            <a href="${article.link}" target="_blank" class="article-link">${article.link}</a>
+          </div>
+        </div>`
         this.messages.push({ text: responseMessage, isUser: false, timestamp })
       })
     } else if (Array.isArray(data) && data.length === 0) {
-      this.messages.push({ text: 'No results found.', isUser: false, timestamp })
+      this.messages.push({ text: '<div class="empty-result">No results found.</div>', isUser: false, timestamp })
     }
+    this.scrollToBottom()
   }
 
   public confirmSearch () {
@@ -195,7 +295,6 @@ export default class AISearchWindow extends Vue {
       node.forEach((child) => this.matchConditions(child, words, criteria, question))
     } else {
       if (node.querry_name && !excludedConditions.includes(node.querry_name)) {
-        // 如果包含 "proj" 关键词，并且问题中没有提到 "projection"，则跳过处理
         if (node.querry_name.includes('proj') && !containsProjKeyword) {
           return
         }
@@ -231,7 +330,6 @@ export default class AISearchWindow extends Vue {
           })
         }
 
-        // 确保没有 None 这样的错误值
         if (Array.isArray(criteria[node.querry_name])) {
           criteria[node.querry_name] = criteria[node.querry_name].filter((value: any) => value !== null)
           if (criteria[node.querry_name].length === 0) {
@@ -252,528 +350,320 @@ export default class AISearchWindow extends Vue {
 </script>
 
 <style scoped>
+/* ============================================
+   NeuroXiv Search — Modern UI (Simplified)
+   ============================================ */
+
 .chat-window {
   width: 100%;
-  max-width: 768px;
+  max-width: 820px;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  background: #ffffff;
+  background: #fafbfc;
   margin: auto;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
-  min-height: 300px;
-  overflow: hidden;
+  max-height: 88vh;
+  min-height: 320px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+/* Welcome */
+.welcome-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.welcome-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
+}
+
+.welcome-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.welcome-title {
+  font-size: 1.35em;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+}
+
+.welcome-subtitle {
+  font-size: 0.92em;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Chat area */
 .chat-messages {
   flex: 1;
-  padding: 20px;
-  background: #f7f7f7;
+  padding: 24px 20px;
   overflow-y: auto;
-}
-
-.message-bubble {
-  background: #e1e1e1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
-  margin: 4px 0;
-  padding: 10px 20px;
-  display: inline-block;
-  max-width: 70%;
-}
-
-.user-message {
-  background: #007bff;
-  color: white;
-  float: right;
-  clear: both;
-  margin-right: 20px;
-}
-
-.system-message {
-  background: #e1e1e1;
-  color: black;
-  float: left;
-  clear: both;
-  margin-left: 20px;
-}
-
-input {
-  padding: 12px 20px;
-  border-radius: 30px;
-  border: 2px solid #007bff;
-  margin: 10px 20px;
-  width: calc(100% - 40px);
-  box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 .chat-messages::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .chat-messages::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 10px;
+  background: transparent;
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-  background: #bbb;
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
 }
 
-.message-timestamp {
-  font-size: 0.75em;
-  margin-top: 5px;
-  color: #999;
-  text-align: right;
+/* Message rows */
+.message-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-row--user {
+  flex-direction: row-reverse;
+}
+
+.avatar-wrapper {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   object-fit: cover;
-  margin: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.user-avatar {
-  float: right;
+.message-body {
+  max-width: 78%;
+  min-width: 60px;
 }
 
-.system-avatar {
-  float: left;
+.message-body--user {
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.2);
 }
 
-.message-container {
-  display: flex;
-  align-items: flex-start;
-  clear: both;
+.message-body--system {
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 18px 18px 18px 4px;
+  padding: 16px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.user-message-container {
-  justify-content: flex-end;
+.message-time {
+  font-size: 0.7em;
+  color: #9ca3af;
+  margin-top: 6px;
+  text-align: right;
 }
 
-.system-message-container {
-  justify-content: flex-start;
+.message-body--user .message-time {
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.execute-code-btn {
-  background-color: #007bff;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  right: 10px;
-  bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s, transform 0.2s;
+.plain-text {
+  font-size: 0.92em;
+  line-height: 1.65;
+  word-break: break-word;
 }
 
-.icon-play {
-  fill: white;
-  width: 20px;
-  height: 20px;
-}
-
-.execute-code-btn:hover {
-  background-color: #0056b3;
-}
-
-.execute-code-btn:active {
-  transform: scale(0.9);
-}
-
-.message-bubble {
-  position: relative;
-  padding: 10px 10px 10px 10px;
-}
-
-pre, code {
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
-  overflow: auto;
+.plain-text >>> pre,
+.plain-text >>> code {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.88em;
+  overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* Code execution */
+.execute-code-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-top: 6px;
+  display: inline-flex;
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.execute-code-btn:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.play-icon {
+  width: 24px;
+  height: 24px;
+  color: #667eea;
+}
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  padding: 4px 0;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background: #d1d5db;
+  border-radius: 50%;
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); background: #d1d5db; }
+  30% { transform: translateY(-6px); background: #667eea; }
+}
+
+/* Input area */
+.input-area {
+  padding: 12px 20px 16px 20px;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 14px;
+  padding: 6px 6px 6px 16px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-box {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.92em;
+  color: #1f2937;
+  resize: none;
+  line-height: 1.5;
+  padding: 6px 0;
+  max-height: 120px;
+  font-family: inherit;
+}
+
+.input-box::placeholder {
+  color: #9ca3af;
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.send-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.send-btn--active {
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.send-btn--active:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:disabled {
+  cursor: default;
+}
+
+/* Article results */
+.message-body >>> .article-result {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.message-body >>> .article-index {
+  width: 28px;
+  height: 28px;
+  background: #f0f1ff;
+  color: #4338ca;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85em;
+  flex-shrink: 0;
+}
+
+.message-body >>> .article-body { flex: 1; }
+.message-body >>> .article-title { font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+.message-body >>> .article-meta { font-size: 0.82em; color: #6b7280; margin-bottom: 4px; }
+.message-body >>> .article-score { font-size: 0.78em; color: #667eea; font-weight: 600; margin-bottom: 6px; }
+.message-body >>> .article-summary { font-size: 0.85em; color: #4b5563; line-height: 1.5; margin-bottom: 6px; }
+.message-body >>> .article-link { font-size: 0.8em; color: #667eea; text-decoration: none; }
+.message-body >>> .article-link:hover { text-decoration: underline; }
+.message-body >>> .empty-result { text-align: center; color: #9ca3af; padding: 8px 0; }
 </style>
-<!--<template>-->
-<!--  <div class="chat-window">-->
-<!--    <div class="chat-messages">-->
-<!--      <div-->
-<!--        v-for="(message, index) in messages"-->
-<!--        :key="index"-->
-<!--        class="message-container"-->
-<!--        :class="{'user-message-container': message.isUser, 'system-message-container': !message.isUser}"-->
-<!--      >-->
-<!--        <img-->
-<!--          v-if="!message.isUser"-->
-<!--          src="../../../public/img/AIPOM.png"-->
-<!--          alt="System Avatar"-->
-<!--          class="avatar system-avatar"-->
-<!--        >-->
-<!--        <div-->
-<!--          class="message-bubble"-->
-<!--          :class="{'user-message': message.isUser, 'system-message': !message.isUser}"-->
-<!--        >-->
-<!--          <span v-html="message.text" />-->
-<!--          <button-->
-<!--            v-if="isPythonCode(message.text)"-->
-<!--            class="execute-code-btn"-->
-<!--            @click="executePythonCode(message.text)"-->
-<!--          >-->
-<!--            <svg-->
-<!--              xmlns="http://www.w3.org/2000/svg"-->
-<!--              viewBox="0 0 24 24"-->
-<!--              fill="none"-->
-<!--              stroke="currentColor"-->
-<!--              stroke-width="2"-->
-<!--              stroke-linecap="round"-->
-<!--              stroke-linejoin="round"-->
-<!--              class="icon-play"-->
-<!--            >-->
-<!--              <polygon points="5 3 19 12 5 21 5 3" />-->
-<!--            </svg>-->
-<!--          </button>-->
-<!--          <div class="message-timestamp">-->
-<!--            {{ message.timestamp }}-->
-<!--          </div> &lt;!&ndash; 时间戳 &ndash;&gt;-->
-<!--        </div>-->
-<!--        <img-->
-<!--          v-if="message.isUser"-->
-<!--          src="../../../public/img/User.png"-->
-<!--          alt="User Avatar"-->
-<!--          class="avatar user-avatar"-->
-<!--        >-->
-<!--      </div>-->
-<!--    </div>-->
-<!--    <input-->
-<!--      v-model="userInput"-->
-<!--      placeholder="Type a message..."-->
-<!--      class="input-box"-->
-<!--      @keyup.enter="$emit('AISearch')"-->
-<!--    >-->
-<!--  </div>-->
-<!--</template>-->
-
-<!--<script lang="ts">-->
-
-<!--import { Component, Vue } from 'vue-property-decorator'-->
-<!--import searchConditions from './search_conditions.json'-->
-<!--@Component-->
-
-<!--export default class AISearchWindow extends Vue {-->
-<!--  public messages: {text: string, isUser: Boolean, timestamp: string}[] = []-->
-<!--  private userInput: string = ''-->
-<!--  public lastInput: string = ''-->
-<!--  private Conditions: any[] = searchConditions.children-->
-<!--  public code:string = ''-->
-
-<!--  public scrollToBottom () {-->
-<!--    this.$nextTick(() => {-->
-<!--      const container = this.$el.querySelector('.chat-messages')-->
-<!--      if (container) { // 检查 container 是否为 null-->
-<!--        container.scrollTop = container.scrollHeight-->
-<!--      }-->
-<!--    })-->
-<!--  }-->
-
-<!--  public sendMessage () {-->
-<!--    const userMessage = this.userInput-->
-<!--    if (userMessage) {-->
-<!--      const currentTime = new Date() // 获取当前时间-->
-<!--      // 格式化时间为 HH:MM 格式-->
-<!--      const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')-->
-
-<!--      this.messages.push({-->
-<!--        text: userMessage,-->
-<!--        isUser: true,-->
-<!--        timestamp: timestamp // 添加时间戳属性-->
-<!--      })-->
-<!--      this.lastInput = userMessage-->
-<!--      this.userInput = ''-->
-<!--      // this.addResponseFromAPI(userMessage)-->
-<!--      this.scrollToBottom()-->
-<!--    }-->
-<!--  }-->
-<!--  public setCode (code: string) {-->
-<!--    this.code = code-->
-<!--  }-->
-
-<!--  public isPythonCode (text: string): boolean {-->
-<!--    return text.trim().includes('import')-->
-<!--  }-->
-
-<!--  public async executePythonCode (code: string) {-->
-<!--    this.$emit('executeCode')-->
-<!--  }-->
-
-<!--  formatTimestamp (date: Date): string {-->
-<!--    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`-->
-<!--  }-->
-
-<!--  // public addResponseFromAPI (Response: string) {-->
-<!--  //   // Simulate a response from an API (replace with your actual API call)-->
-<!--  //   if (Response !== this.lastInput) {-->
-<!--  //     const responseMessage = 'SEU-Allen: ' + Response-->
-<!--  //     const currentTime = new Date() // 获取当前时间-->
-<!--  //     // 格式化时间为 HH:MM 格式-->
-<!--  //     const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')-->
-<!--  //     this.messages.push({ text: responseMessage, isUser: false, timestamp: timestamp })-->
-<!--  //   }-->
-<!--  // }-->
-
-<!--  public addResponseFromAPI (data: any) {-->
-<!--    // 获取当前时间戳-->
-<!--    const currentTime = new Date() // 获取当前时间-->
-<!--    //     // 格式化时间为 HH:MM 格式-->
-<!--    const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')-->
-
-<!--    // 如果传入的是字符串（原有需求）-->
-<!--    if (typeof data === 'string') {-->
-<!--      this.messages.push({-->
-<!--        text: data, isUser: false, timestamp-->
-<!--      })-->
-<!--      // eslint-disable-next-line brace-style-->
-<!--    }-->
-<!--    // 如果传入的是对象数组（新需求）-->
-<!--    else if (Array.isArray(data) && data.length > 0) {-->
-<!--      data.forEach((article: { title: string; summary: string; link: string }, index: number) => {-->
-<!--        let responseMessage = `<span style="font-weight: bold; font-size: larger;">${index + 1}. Article Title:</span> ${article.title}<br>-->
-<!--  <span style="font-weight: bold; font-size: larger;">Summary:</span> ${article.summary}<br>-->
-<!--  <span style="font-weight: bold; font-size: larger;">Link:</span> <a href="${article.link}" target="_blank" style="text-decoration: underline; color: #007bff">${article.link}</a>`-->
-<!--        this.messages.push({ text: responseMessage, isUser: false, timestamp })-->
-<!--      })-->
-<!--      // eslint-disable-next-line brace-style-->
-<!--    }-->
-<!--    // 如果数组为空，表示没有搜索到结果-->
-<!--    else if (Array.isArray(data) && data.length === 0) {-->
-<!--      this.messages.push({ text: 'No results found.', isUser: false, timestamp })-->
-<!--    }-->
-<!--  }-->
-<!--  public confirmSearch () {-->
-<!--    this.$emit('AISearch')-->
-<!--  }-->
-
-<!--  public GetIntent (question: string) {-->
-<!--    if (!this.Conditions) return-->
-
-<!--    let criteria: any = {}-->
-<!--    const words = question.trim().split(/\s+/)-->
-
-<!--    // 遍历 JSON 文件并匹配条件-->
-<!--    this.matchConditions(this.Conditions, words, criteria, question.toLowerCase())-->
-
-<!--    return criteria-->
-<!--  }-->
-
-<!--  public matchConditions (node: any, words: string[], criteria: any, question: string) {-->
-<!--    if (!node) return-->
-
-<!--    if (Array.isArray(node)) {-->
-<!--      node.forEach((child) => this.matchConditions(child, words, criteria, question))-->
-<!--    } else {-->
-<!--      if (node.querry_name) {-->
-<!--        // 检查是否匹配querry_name（包含关系，不区分大小写）-->
-<!--        const querryNameKeyword = node.querry_name.toLowerCase()-->
-<!--        if (words.some(word => querryNameKeyword.includes(word.toLowerCase()))) {-->
-<!--          // 检查数值型条件-->
-<!--          const numberRangeRegex = /\[(\d+(\.\d+)?),\s*(\d+(\.\d+)?)\]/-->
-<!--          const match = question.match(numberRangeRegex)-->
-<!--          if (match) {-->
-<!--            const value = [parseFloat(match[1]), parseFloat(match[3])]-->
-<!--            criteria[node.querry_name] = value-->
-<!--          } else if (node.default) {-->
-<!--            criteria[node.querry_name] = node.default-->
-<!--          } else {-->
-<!--            criteria[node.querry_name] = true-->
-<!--          }-->
-<!--        }-->
-
-<!--        // 检查candidates列表中的每个候选词-->
-<!--        if (Array.isArray(node.candidates)) {-->
-<!--          words.forEach((word) => {-->
-<!--            node.candidates.forEach((candidate: any) => {-->
-<!--              if (typeof candidate === 'string' && word.toLowerCase() === candidate.toLowerCase()) {-->
-<!--                if (!criteria[node.querry_name]) {-->
-<!--                  criteria[node.querry_name] = []-->
-<!--                }-->
-<!--                if (!criteria[node.querry_name].includes(candidate)) {-->
-<!--                  criteria[node.querry_name].push(candidate)-->
-<!--                }-->
-<!--              }-->
-<!--            })-->
-<!--          })-->
-<!--        }-->
-<!--      }-->
-<!--      if (node.children) {-->
-<!--        this.matchConditions(node.children, words, criteria, question)-->
-<!--      }-->
-<!--    }-->
-<!--  }-->
-<!--}-->
-<!--</script>-->
-
-<!--<style scoped>-->
-<!--.chat-window {-->
-<!--  width: 100%; /* 聊天窗口宽度自适应父元素 */-->
-<!--  max-width: 768px; /* 控制最大宽度 */-->
-<!--  border-radius: 16px; /* 圆角边框 */-->
-<!--  overflow: hidden; /* 防止子元素溢出边框 */-->
-<!--  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 更轻的阴影，增加立体感 */-->
-<!--  background: #ffffff; /* 纯白背景 */-->
-<!--  margin: auto; /* 居中显示 */-->
-<!--  display: flex;-->
-<!--  flex-direction: column; /* 垂直布局 */-->
-<!--  max-height: 90vh; /* 最大高度不超过视口的90% */-->
-<!--  min-height: 300px; /* 最小高度 */-->
-<!--  overflow: hidden; /* 内容溢出时隐藏 */-->
-<!--}-->
-
-<!--.chat-messages {-->
-<!--  flex: 1; /* 让消息列表填充所有可用空间 */-->
-<!--  padding: 20px; /* 增加内部间距 */-->
-<!--  background: #f7f7f7; /* 淡灰色背景 */-->
-<!--  overflow-y: auto; /* 自动显示滚动条 */-->
-<!--}-->
-
-<!--.message-bubble {-->
-<!--  background: #e1e1e1; /* 统一气泡背景色 */-->
-<!--  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 轻微阴影 */-->
-<!--  border-radius: 20px; /* 圆角 */-->
-<!--  margin: 4px 0; /* 消息间距 */-->
-<!--  padding: 10px 20px; /* 内边距 */-->
-<!--  display: inline-block; /* 保证气泡根据内容扩展 */-->
-<!--  max-width: 70%; /* 控制气泡宽度 */-->
-<!--}-->
-
-<!--.user-message {-->
-<!--  background: #007bff; /* 用户消息颜色 */-->
-<!--  color: white; /* 用户消息文字颜色 */-->
-<!--  float: right; /* 靠右浮动 */-->
-<!--  clear: both; /* 避免相邻元素的浮动 */-->
-<!--  margin-right: 20px; /* 与窗口边缘的间距 */-->
-<!--}-->
-
-<!--.system-message {-->
-<!--  background: #e1e1e1; /* 系统消息颜色 */-->
-<!--  color: black; /* 系统消息文字颜色 */-->
-<!--  float: left; /* 靠左浮动 */-->
-<!--  clear: both; /* 避免相邻元素的浮动 */-->
-<!--  margin-left: 20px; /* 与窗口边缘的间距 */-->
-<!--}-->
-
-<!--input {-->
-<!--  padding: 12px 20px; /* 输入框内边距 */-->
-<!--  border-radius: 30px; /* 圆角边框 */-->
-<!--  border: 2px solid #007bff; /* 边框颜色与用户消息气泡一致 */-->
-<!--  margin: 10px 20px; /* 边距 */-->
-<!--  width: calc(100% - 40px); /* 输入框宽度 */-->
-<!--  box-sizing: border-box; /* 边框盒模型 */-->
-<!--}-->
-
-<!--/* 自适应滚动条样式 */-->
-<!--.chat-messages::-webkit-scrollbar {-->
-<!--  width: 8px;-->
-<!--}-->
-
-<!--.chat-messages::-webkit-scrollbar-track {-->
-<!--  background: #f0f0f0;-->
-<!--  border-radius: 10px; /* 圆角滚动条 */-->
-<!--}-->
-
-<!--.chat-messages::-webkit-scrollbar-thumb {-->
-<!--  background: #bbb;-->
-<!--  border-radius: 10px;-->
-<!--}-->
-<!--/* 时间戳样式 */-->
-<!--.message-timestamp {-->
-<!--  font-size: 0.75em;-->
-<!--  margin-top: 5px;-->
-<!--  color: #999;-->
-<!--  text-align: right;-->
-<!--}-->
-<!--.avatar {-->
-<!--    width: 40px; /* 设置头像宽度 */-->
-<!--    height: 40px; /* 设置头像高度 */-->
-<!--    border-radius: 50%; /* 圆形头像 */-->
-<!--    object-fit: cover; /* 保持图片比例 */-->
-<!--    margin: 4px; /* 头像与气泡间隔 */-->
-<!--}-->
-
-<!--.user-avatar {-->
-<!--    float: right; /* 用户头像靠右 */-->
-<!--}-->
-
-<!--.system-avatar {-->
-<!--    float: left; /* 系统头像靠左 */-->
-<!--}-->
-
-<!--.message-container {-->
-<!--    display: flex;-->
-<!--    align-items: flex-start; /* 对齐到底部 */-->
-<!--    clear: both; /* 清除浮动 */-->
-<!--}-->
-
-<!--.user-message-container {-->
-<!--    justify-content: flex-end; /* 用户气泡靠右 */-->
-<!--}-->
-
-<!--.system-message-container {-->
-<!--    justify-content: flex-start; /* 系统气泡靠左 */-->
-<!--}-->
-
-<!--.execute-code-btn {-->
-<!--    background-color: #007bff; /* Primary color */-->
-<!--    border: none; /* No border */-->
-<!--    border-radius: 50%; /* Circle shape */-->
-<!--    width: 30px; /* Diameter of the button */-->
-<!--    height: 30px; /* Diameter of the button */-->
-<!--    cursor: pointer;-->
-<!--    display: flex;-->
-<!--    justify-content: center;-->
-<!--    align-items: center;-->
-<!--    right: 10px;-->
-<!--    bottom: 10px;-->
-<!--    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */-->
-<!--    transition: background-color 0.2s, transform 0.2s; /* Smooth transitions for feedback */-->
-<!--}-->
-
-<!--.icon-play {-->
-<!--    fill: white; /* Icon color contrast */-->
-<!--    width: 20px; /* Icon size */-->
-<!--    height: 20px; /* Icon size */-->
-<!--}-->
-
-<!--.execute-code-btn:hover {-->
-<!--    background-color: #0056b3; /* Darker shade on hover */-->
-<!--}-->
-
-<!--.execute-code-btn:active {-->
-<!--    transform: scale(0.9); /* Slightly shrink the button when clicked */-->
-<!--}-->
-
-<!--.message-bubble {-->
-<!--    position: relative; /* Needed for absolute positioning of the button */-->
-<!--    padding: 10px 10px 10px 10px ; /* Adjust padding to give space for the button */-->
-<!--}-->
-
-<!--pre, code {-->
-<!--  background-color: #f4f4f4; /* 浅灰色背景，突出显示代码区域 */-->
-<!--  border: 1px solid #ddd; /* 边框 */-->
-<!--  border-radius: 5px; /* 圆角边框 */-->
-<!--  padding: 10px; /* 内边距 */-->
-<!--  overflow: auto; /* 超长代码滚动 */-->
-<!--  white-space: pre-wrap; /* 保持空白符 */-->
-<!--  word-break: break-all; /* 单词断行 */-->
-<!--}-->
-<!--</style>-->
-

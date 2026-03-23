@@ -1,311 +1,404 @@
 <template>
   <div class="chat-window">
-    <div class="chat-messages">
+    <!-- Welcome state when no messages -->
+    <div
+      v-if="messages.length === 0"
+      class="welcome-state"
+    >
+      <div class="welcome-icon">
+        <img
+          src="../../../public/img/AIPOM.png"
+          alt="AIPOM"
+          class="welcome-avatar"
+        >
+      </div>
+      <h3 class="welcome-title">AIPOM Analysis</h3>
+      <p class="welcome-subtitle">
+        Ask me about brain regions, neurons, connectivity, morphology, and more.
+      </p>
+      <div class="welcome-suggestions">
+        <div
+          class="suggestion-chip"
+          @click="useSuggestion('What neurons are in the SFG region?')"
+        >
+          What neurons are in the SFG region?
+        </div>
+        <div
+          class="suggestion-chip"
+          @click="useSuggestion('Compare connectivity between MFG and STG')"
+        >
+          Compare connectivity between MFG and STG
+        </div>
+        <div
+          class="suggestion-chip"
+          @click="useSuggestion('Show me the morphology of pyramidal neurons')"
+        >
+          Show me the morphology of pyramidal neurons
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat messages area -->
+    <div
+      v-else
+      class="chat-messages"
+    >
       <div
         v-for="(message, index) in messages"
         :key="index"
-        class="message-container"
-        :class="{'user-message-container': message.isUser, 'system-message-container': !message.isUser}"
+        class="message-row"
+        :class="{
+          'message-row--user': message.isUser,
+          'message-row--system': !message.isUser,
+          'message-enter': message._animating
+        }"
       >
-        <img
-          v-if="!message.isUser"
-          src="../../../public/img/AIPOM.png"
-          alt="System Avatar"
-          class="avatar system-avatar"
-        >
+        <!-- System avatar -->
         <div
-          class="message-bubble"
-          :class="{'user-message': message.isUser, 'system-message': !message.isUser}"
+          v-if="!message.isUser"
+          class="avatar-wrapper"
         >
-          <!-- Structured AIPOM response -->
+          <img
+            src="../../../public/img/AIPOM.png"
+            alt="AIPOM"
+            class="avatar"
+          >
+        </div>
+
+        <!-- Message content -->
+        <div
+          class="message-body"
+          :class="{
+            'message-body--user': message.isUser,
+            'message-body--system': !message.isUser
+          }"
+        >
+          <!-- ===== Structured AIPOM response ===== -->
           <template v-if="!message.isUser && message.structured">
-            <div class="aipom-label">AIPOM Analysis:</div>
-
-            <!-- Reasoning Process - collapsible with fade preview -->
-            <div class="collapsible-section">
+            <!-- Summary always on top, prominent -->
+            <div class="response-summary">
               <div
-                class="section-header"
-                @click="toggleSection(index, 'reasoning')"
-              >
-                <svg
-                  class="chevron-icon"
-                  :class="{ 'chevron-open': isSectionOpen(index, 'reasoning') }"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <span class="section-title">Reasoning Process</span>
-              </div>
-              <div
-                class="section-body"
-                :class="{
-                  'section-collapsed': !isSectionOpen(index, 'reasoning'),
-                  'section-expanded': isSectionOpen(index, 'reasoning')
-                }"
-              >
-                <div
-                  class="section-content"
-                  v-html="message.reasoningHtml"
-                />
-                <div
-                  v-if="!isSectionOpen(index, 'reasoning')"
-                  class="fade-overlay"
-                  @click="toggleSection(index, 'reasoning')"
-                />
-              </div>
-            </div>
-
-            <!-- Evidence Data - collapsible with fade preview -->
-            <div class="collapsible-section">
-              <div
-                class="section-header"
-                @click="toggleSection(index, 'evidence')"
-              >
-                <svg
-                  class="chevron-icon"
-                  :class="{ 'chevron-open': isSectionOpen(index, 'evidence') }"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <span class="section-title">Evidence Data</span>
-              </div>
-              <div
-                class="section-body"
-                :class="{
-                  'section-collapsed': !isSectionOpen(index, 'evidence'),
-                  'section-expanded': isSectionOpen(index, 'evidence')
-                }"
-              >
-                <div
-                  class="section-content"
-                  v-html="message.evidenceHtml"
-                />
-                <div
-                  v-if="!isSectionOpen(index, 'evidence')"
-                  class="fade-overlay"
-                  @click="toggleSection(index, 'evidence')"
-                />
-              </div>
-            </div>
-
-            <!-- Firing Models - collapsible, only shown when SVG content exists -->
-            <div v-if="message.svgs && message.svgs.length > 0" class="collapsible-section">
-              <div
-                class="section-header"
-                @click="toggleSection(index, 'svgs')"
-              >
-                <svg
-                  class="chevron-icon"
-                  :class="{ 'chevron-open': isSectionOpen(index, 'svgs') }"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <span class="section-title">Firing Models</span>
-              </div>
-              <div
-                class="section-body"
-                :class="{
-                  'section-collapsed': !isSectionOpen(index, 'svgs'),
-                  'section-expanded': isSectionOpen(index, 'svgs')
-                }"
-              >
-                <div class="section-content">
-                  <div
-                    v-for="svg in message.svgs"
-                    :key="svg.model_id"
-                    class="svg-item"
-                  >
-                    <div class="svg-label">{{ svg.human_region }} / Neuron {{ svg.neuron_id }}</div>
-                    <div
-                      class="svg-container"
-                      v-html="svg.svg_content"
-                    />
-                  </div>
-                </div>
-                <div
-                  v-if="!isSectionOpen(index, 'svgs')"
-                  class="fade-overlay"
-                  @click="toggleSection(index, 'svgs')"
-                />
-              </div>
-            </div>
-
-            <!-- Tool Calls - collapsible, only shown when present -->
-            <div v-if="message.toolCalls && message.toolCalls.length > 0" class="collapsible-section">
-              <div
-                class="section-header"
-                @click="toggleSection(index, 'tools')"
-              >
-                <svg
-                  class="chevron-icon"
-                  :class="{ 'chevron-open': isSectionOpen(index, 'tools') }"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <span class="section-title">Tool Calls ({{ message.toolCalls.length }})</span>
-              </div>
-              <div
-                class="section-body"
-                :class="{
-                  'section-collapsed': !isSectionOpen(index, 'tools'),
-                  'section-expanded': isSectionOpen(index, 'tools')
-                }"
-              >
-                <div class="section-content tool-calls-list">
-                  <div
-                    v-for="(tc, tcIdx) in message.toolCalls"
-                    :key="tcIdx"
-                    class="tool-call-item"
-                    :class="{ 'tool-success': tc.success, 'tool-fail': !tc.success }"
-                  >
-                    <span class="tool-icon">{{ tc.success ? '✓' : '✗' }}</span>
-                    <span class="tool-name">{{ tc.tool }}</span>
-                    <span v-if="tc.row_count" class="tool-rows">{{ tc.row_count }} rows</span>
-                    <span v-if="tc.is_frontend_action" class="tool-badge">UI</span>
-                  </div>
-                </div>
-                <div
-                  v-if="!isSectionOpen(index, 'tools')"
-                  class="fade-overlay"
-                  @click="toggleSection(index, 'tools')"
-                />
-              </div>
-            </div>
-
-            <!-- Publication Figures - shown when generated -->
-            <div v-if="message.figures && message.figures.length > 0" class="collapsible-section">
-              <div
-                class="section-header"
-                @click="toggleSection(index, 'figures')"
-              >
-                <svg
-                  class="chevron-icon"
-                  :class="{ 'chevron-open': isSectionOpen(index, 'figures') }"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-                <span class="section-title">Publication Figures ({{ message.figures.length }})</span>
-              </div>
-              <div
-                class="section-body"
-                :class="{
-                  'section-collapsed': !isSectionOpen(index, 'figures'),
-                  'section-expanded': isSectionOpen(index, 'figures')
-                }"
-              >
-                <div class="section-content figures-gallery">
-                  <div
-                    v-for="(fig, figIdx) in message.figures"
-                    :key="figIdx"
-                    class="figure-item"
-                  >
-                    <img
-                      :src="'data:image/png;base64,' + fig.base64"
-                      :alt="fig.caption || 'Publication figure'"
-                      class="figure-image"
-                      @click="openFigureFullscreen(fig)"
-                    >
-                    <div class="figure-caption">
-                      <span class="figure-label">Figure {{ figIdx + 1 }}.</span>
-                      {{ fig.caption }}
-                    </div>
-                    <a
-                      :href="getAipomBaseUrl() + '/figure/' + fig.figure_id"
-                      target="_blank"
-                      class="figure-download"
-                      download
-                    >Download high-res PNG (300 DPI)</a>
-                  </div>
-                </div>
-                <div
-                  v-if="!isSectionOpen(index, 'figures')"
-                  class="fade-overlay"
-                  @click="toggleSection(index, 'figures')"
-                />
-              </div>
-            </div>
-
-            <!-- Summary - always visible -->
-            <div class="summary-section">
-              <div class="section-title-static">Summary</div>
-              <div
-                class="summary-content"
+                class="summary-text"
                 v-html="message.summaryHtml"
               />
             </div>
-          </template>
 
-          <!-- Regular messages (plain text / articles / etc.) -->
-          <template v-else>
-            <span v-html="message.text" />
-            <button
-              v-if="isPythonCode(message.text)"
-              class="execute-code-btn"
-              @click="executePythonCode(message.text)"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="icon-play"
+            <!-- Detail cards -->
+            <div class="detail-cards">
+              <!-- Reasoning Process -->
+              <div class="detail-card">
+                <div
+                  class="card-header"
+                  @click="toggleSection(index, 'reasoning')"
+                >
+                  <div class="card-header-left">
+                    <span class="card-icon card-icon--reasoning">
+                      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z"/></svg>
+                    </span>
+                    <span class="card-title">Reasoning Process</span>
+                  </div>
+                  <svg
+                    class="card-chevron"
+                    :class="{ 'card-chevron--open': isSectionOpen(index, 'reasoning') }"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <transition name="slide">
+                  <div
+                    v-show="isSectionOpen(index, 'reasoning')"
+                    class="card-body"
+                  >
+                    <div
+                      class="card-content"
+                      v-html="message.reasoningHtml"
+                    />
+                  </div>
+                </transition>
+              </div>
+
+              <!-- Evidence Data -->
+              <div class="detail-card">
+                <div
+                  class="card-header"
+                  @click="toggleSection(index, 'evidence')"
+                >
+                  <div class="card-header-left">
+                    <span class="card-icon card-icon--evidence">
+                      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+                    </span>
+                    <span class="card-title">Evidence Data</span>
+                  </div>
+                  <svg
+                    class="card-chevron"
+                    :class="{ 'card-chevron--open': isSectionOpen(index, 'evidence') }"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <transition name="slide">
+                  <div
+                    v-show="isSectionOpen(index, 'evidence')"
+                    class="card-body"
+                  >
+                    <div
+                      class="card-content"
+                      v-html="message.evidenceHtml"
+                    />
+                  </div>
+                </transition>
+              </div>
+
+              <!-- Firing Models -->
+              <div
+                v-if="message.svgs && message.svgs.length > 0"
+                class="detail-card"
               >
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
-            </button>
+                <div
+                  class="card-header"
+                  @click="toggleSection(index, 'svgs')"
+                >
+                  <div class="card-header-left">
+                    <span class="card-icon card-icon--model">
+                      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+                    </span>
+                    <span class="card-title">Firing Models</span>
+                  </div>
+                  <svg
+                    class="card-chevron"
+                    :class="{ 'card-chevron--open': isSectionOpen(index, 'svgs') }"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <transition name="slide">
+                  <div
+                    v-show="isSectionOpen(index, 'svgs')"
+                    class="card-body"
+                  >
+                    <div class="card-content">
+                      <div
+                        v-for="svg in message.svgs"
+                        :key="svg.model_id"
+                        class="svg-item"
+                      >
+                        <div class="svg-label">{{ svg.human_region }} / Neuron {{ svg.neuron_id }}</div>
+                        <div
+                          class="svg-container"
+                          v-html="svg.svg_content"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+
+              <!-- Tool Calls -->
+              <div
+                v-if="message.toolCalls && message.toolCalls.length > 0"
+                class="detail-card"
+              >
+                <div
+                  class="card-header"
+                  @click="toggleSection(index, 'tools')"
+                >
+                  <div class="card-header-left">
+                    <span class="card-icon card-icon--tools">
+                      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+                    </span>
+                    <span class="card-title">Tool Calls</span>
+                    <span class="card-badge">{{ message.toolCalls.length }}</span>
+                  </div>
+                  <svg
+                    class="card-chevron"
+                    :class="{ 'card-chevron--open': isSectionOpen(index, 'tools') }"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <transition name="slide">
+                  <div
+                    v-show="isSectionOpen(index, 'tools')"
+                    class="card-body"
+                  >
+                    <div class="card-content tool-calls-grid">
+                      <div
+                        v-for="(tc, tcIdx) in message.toolCalls"
+                        :key="tcIdx"
+                        class="tool-pill"
+                        :class="{ 'tool-pill--success': tc.success, 'tool-pill--fail': !tc.success }"
+                      >
+                        <span class="tool-pill-dot" />
+                        <span class="tool-pill-name">{{ tc.tool }}</span>
+                        <span
+                          v-if="tc.row_count"
+                          class="tool-pill-meta"
+                        >{{ tc.row_count }} rows</span>
+                        <span
+                          v-if="tc.is_frontend_action"
+                          class="tool-pill-badge"
+                        >UI</span>
+                      </div>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+
+              <!-- Publication Figures -->
+              <div
+                v-if="message.figures && message.figures.length > 0"
+                class="detail-card"
+              >
+                <div
+                  class="card-header"
+                  @click="toggleSection(index, 'figures')"
+                >
+                  <div class="card-header-left">
+                    <span class="card-icon card-icon--figures">
+                      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+                    </span>
+                    <span class="card-title">Publication Figures</span>
+                    <span class="card-badge">{{ message.figures.length }}</span>
+                  </div>
+                  <svg
+                    class="card-chevron"
+                    :class="{ 'card-chevron--open': isSectionOpen(index, 'figures') }"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <transition name="slide">
+                  <div
+                    v-show="isSectionOpen(index, 'figures')"
+                    class="card-body"
+                  >
+                    <div class="card-content figures-gallery">
+                      <div
+                        v-for="(fig, figIdx) in message.figures"
+                        :key="figIdx"
+                        class="figure-card"
+                      >
+                        <img
+                          :src="'data:image/png;base64,' + fig.base64"
+                          :alt="fig.caption || 'Publication figure'"
+                          class="figure-image"
+                          @click="openFigureFullscreen(fig)"
+                        >
+                        <div class="figure-footer">
+                          <div class="figure-caption">
+                            <span class="figure-label">Fig {{ figIdx + 1 }}.</span>
+                            {{ fig.caption }}
+                          </div>
+                          <a
+                            :href="getAipomBaseUrl() + '/figure/' + fig.figure_id"
+                            target="_blank"
+                            class="figure-download"
+                            download
+                          >
+                            <svg viewBox="0 0 20 20" fill="currentColor" class="download-icon"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                            300 DPI
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+            </div>
           </template>
 
-          <div class="message-timestamp">
+          <!-- ===== Regular messages ===== -->
+          <template v-else>
+            <div
+              class="plain-text"
+              v-html="message.text"
+            />
+          </template>
+
+          <div class="message-time">
             {{ message.timestamp }}
           </div>
         </div>
-        <img
+
+        <!-- User avatar -->
+        <div
           v-if="message.isUser"
-          src="../../../public/img/User.png"
-          alt="User Avatar"
-          class="avatar user-avatar"
+          class="avatar-wrapper"
         >
+          <img
+            src="../../../public/img/User.png"
+            alt="User"
+            class="avatar"
+          >
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div
+        v-if="isLoading"
+        class="message-row message-row--system"
+      >
+        <div class="avatar-wrapper">
+          <img
+            src="../../../public/img/AIPOM.png"
+            alt="AIPOM"
+            class="avatar"
+          >
+        </div>
+        <div class="message-body message-body--system">
+          <div class="typing-indicator">
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+          </div>
+        </div>
       </div>
     </div>
-    <!-- Agentic Mode toggle above input -->
+
+    <!-- Input area -->
     <div class="input-area">
-      <div class="mode-toggle-bar">
-        <el-switch
-          :value="searchMode"
-          active-value="agentic"
-          inactive-value="search"
-          active-text="AIPOM-CoT Mode"
-          @change="$emit('update:searchMode', $event)"
-        />
+      <div class="input-controls">
+        <div class="mode-switch">
+          <el-switch
+            :value="searchMode"
+            active-value="agentic"
+            inactive-value="search"
+            @change="$emit('update:searchMode', $event)"
+          />
+          <span class="mode-label">{{ searchMode === 'agentic' ? 'AIPOM-CoT' : 'Search' }}</span>
+        </div>
       </div>
-      <input
-        v-model="userInput"
-        placeholder="[search]:<your query>"
-        class="input-box"
-        @keyup.enter="$emit('AISearch')"
-      >
+      <div class="input-wrapper">
+        <textarea
+          ref="inputBox"
+          v-model="userInput"
+          :placeholder="searchMode === 'agentic' ? 'Ask AIPOM anything about brain data...' : 'Search neurons...'"
+          class="input-box"
+          rows="1"
+          @keydown.enter.exact="handleEnter"
+          @input="autoResize"
+        />
+        <button
+          class="send-btn"
+          :class="{ 'send-btn--active': userInput.trim().length > 0 }"
+          :disabled="!userInput.trim()"
+          @click="$emit('AISearch')"
+        >
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -376,6 +469,7 @@ interface StructuredMessage {
   svgs?: FiringModelSvg[]
   toolCalls?: ToolCallInfo[]
   figures?: FigureInfo[]
+  _animating?: boolean
 }
 
 @Component
@@ -386,8 +480,8 @@ export default class AISearchWindow extends Vue {
   private userInput: string = ''
   public lastInput: string = ''
   private Conditions: any = searchConditions.children
-  public code: string = ''
   private expandedSections: { [key: string]: boolean } = {}
+  public isLoading: boolean = false
 
   public toggleSection (messageIndex: number, section: string) {
     const key = `${messageIndex}_${section}`
@@ -407,8 +501,8 @@ export default class AISearchWindow extends Vue {
     const w = window.open('', '_blank')
     if (w) {
       w.document.write(`<!DOCTYPE html><html><head><title>${fig.caption || 'Figure'}</title>
-        <style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5}
-        img{max-width:95vw;max-height:95vh;box-shadow:0 4px 20px rgba(0,0,0,.15)}</style></head>
+        <style>body{margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0f0f0f}
+        img{max-width:95vw;max-height:95vh;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.4)}</style></head>
         <body><img src="data:image/png;base64,${fig.base64}" alt="${fig.caption}"></body></html>`)
       w.document.close()
     }
@@ -418,9 +512,33 @@ export default class AISearchWindow extends Vue {
     this.$nextTick(() => {
       const container = this.$el.querySelector('.chat-messages')
       if (container) {
-        container.scrollTop = container.scrollHeight
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
       }
     })
+  }
+
+  public useSuggestion (text: string) {
+    this.userInput = text
+    this.$nextTick(() => {
+      this.autoResize()
+    })
+  }
+
+  private handleEnter (e: KeyboardEvent) {
+    if (!e.shiftKey) {
+      e.preventDefault()
+      if (this.userInput.trim()) {
+        this.$emit('AISearch')
+      }
+    }
+  }
+
+  private autoResize () {
+    const el = this.$refs.inputBox as HTMLTextAreaElement
+    if (el) {
+      el.style.height = 'auto'
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+    }
   }
 
   public sendMessage () {
@@ -436,20 +554,14 @@ export default class AISearchWindow extends Vue {
       })
       this.lastInput = userMessage
       this.userInput = ''
+      this.isLoading = true
+      // Reset textarea height
+      this.$nextTick(() => {
+        const el = this.$refs.inputBox as HTMLTextAreaElement
+        if (el) el.style.height = 'auto'
+      })
       this.scrollToBottom()
     }
-  }
-
-  public setCode (code: string) {
-    this.code = code
-  }
-
-  public isPythonCode (text: string): boolean {
-    return text.trim().includes('import')
-  }
-
-  public async executePythonCode (code: string) {
-    this.$emit('executeCode')
   }
 
   formatTimestamp (date: Date): string {
@@ -457,19 +569,17 @@ export default class AISearchWindow extends Vue {
   }
 
   public async addResponseFromAPI (data: any) {
+    this.isLoading = false
     const currentTime = new Date()
     const timestamp = currentTime.getHours().toString().padStart(2, '0') + ':' + currentTime.getMinutes().toString().padStart(2, '0')
     const md = new MarkdownIt()
 
     if (typeof data === 'string') {
-      // Check if this is an "AIPOM Analysis:" prefixed string that came from agentic mode
-      // Try to parse if it looks like it might contain structured data
       const htmlContent = md.render(data)
       this.messages.push({
         text: htmlContent, isUser: false, timestamp
       })
     } else if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
-      // Structured response with reasoning_process, evidence_data, summary
       if (data.reasoning_process || data.evidence_data || data.summary) {
         const reasoningHtml = data.reasoning_process ? md.render(data.reasoning_process) : ''
         const evidenceHtml = data.evidence_data ? md.render(data.evidence_data) : ''
@@ -491,12 +601,10 @@ export default class AISearchWindow extends Vue {
           figures
         })
 
-        // Emit frontend actions for Container to execute
         if (data.frontend_actions && data.frontend_actions.length > 0) {
           this.$emit('frontendActions', data.frontend_actions)
         }
       } else {
-        // Generic object, just stringify and render
         const htmlContent = md.render(JSON.stringify(data, null, 2))
         this.messages.push({
           text: htmlContent, isUser: false, timestamp
@@ -505,16 +613,20 @@ export default class AISearchWindow extends Vue {
     } else if (Array.isArray(data) && data.length > 0) {
       // eslint-disable-next-line camelcase
       data.forEach((article: { title: string; authors: string; relevance_score: number; related_content: string; summary: string; link: string }, index: number) => {
-        let responseMessage = `<span style="font-weight: bold; font-size: larger;">${index + 1}. Article Title:</span> ${article.title}<br>
-          <span style="font-weight: bold; font-size: larger;">Authors:</span> ${article.authors}<br>
-          <span style="font-weight: bold; font-size: larger;">Relevance Score:</span> ${article.relevance_score}<br>
-          <span style="font-weight: bold; font-size: larger;">Related Content:</span> ${article.related_content}<br>
-          <span style="font-weight: bold; font-size: larger;">Summary:</span> ${article.summary}<br>
-          <span style="font-weight: bold; font-size: larger;">Link:</span> <a href="${article.link}" target="_blank" style="text-decoration: underline; color: #007bff">${article.link}</a>`
+        let responseMessage = `<div class="article-result">
+          <div class="article-index">${index + 1}</div>
+          <div class="article-body">
+            <div class="article-title">${article.title}</div>
+            <div class="article-meta">${article.authors}</div>
+            <div class="article-score">Relevance: ${article.relevance_score}</div>
+            <div class="article-summary">${article.summary}</div>
+            <a href="${article.link}" target="_blank" class="article-link">${article.link}</a>
+          </div>
+        </div>`
         this.messages.push({ text: responseMessage, isUser: false, timestamp })
       })
     } else if (Array.isArray(data) && data.length === 0) {
-      this.messages.push({ text: 'No results found.', isUser: false, timestamp })
+      this.messages.push({ text: '<div class="empty-result">No results found.</div>', isUser: false, timestamp })
     }
     this.scrollToBottom()
   }
@@ -607,334 +719,516 @@ export default class AISearchWindow extends Vue {
 </script>
 
 <style scoped>
+/* ============================================
+   AIPOM Chat Window — Modern UI
+   ============================================ */
+
+/* --- Layout --- */
 .chat-window {
   width: 100%;
-  max-width: 768px;
+  max-width: 820px;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  background: #ffffff;
+  background: #fafbfc;
   margin: auto;
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
-  min-height: 300px;
+  max-height: 88vh;
+  min-height: 320px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.chat-messages {
+/* --- Welcome State --- */
+.welcome-state {
   flex: 1;
-  padding: 20px;
-  background: #f7f7f7;
-  overflow-y: auto;
-}
-
-.message-bubble {
-  background: #e1e1e1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 20px;
-  margin: 4px 0;
-  padding: 10px 20px;
-  display: inline-block;
-  max-width: 70%;
-  position: relative;
-}
-
-.user-message {
-  background: #007bff;
-  color: white;
-  float: right;
-  clear: both;
-  margin-right: 20px;
-}
-
-.system-message {
-  background: #e1e1e1;
-  color: black;
-  float: left;
-  clear: both;
-  margin-left: 20px;
-}
-
-/* Input area with mode toggle */
-.input-area {
   display: flex;
   flex-direction: column;
-  padding: 0 20px 10px 20px;
-}
-
-.mode-toggle-bar {
-  display: flex;
   align-items: center;
-  padding: 8px 0 4px 0;
-}
-
-.input-box {
-  padding: 12px 20px;
-  border-radius: 30px;
-  border: 2px solid #007bff;
-  width: 100%;
-  box-sizing: border-box;
-  outline: none;
-  margin-top: 6px;
-}
-
-/* Collapsible sections */
-.collapsible-section {
-  margin: 8px 0;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  cursor: pointer;
-  user-select: none;
-  background: rgba(0, 0, 0, 0.03);
-  transition: background 0.2s;
-}
-
-.section-header:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.chevron-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
-  transition: transform 0.25s ease;
-  flex-shrink: 0;
-  color: #666;
-}
-
-.chevron-open {
-  transform: rotate(90deg);
-}
-
-.section-title {
-  font-weight: bold;
-  font-size: 0.95em;
-  color: #333;
-}
-
-.section-body {
-  position: relative;
-  overflow: hidden;
-  transition: max-height 0.35s ease;
-}
-
-.section-collapsed {
-  max-height: 100px;
-}
-
-.section-expanded {
-  max-height: none;
-}
-
-.section-content {
-  padding: 8px 12px 12px 12px;
-  font-size: 0.88em;
-  line-height: 1.5;
-  color: #444;
-}
-
-.section-content >>> table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 8px 0;
-  font-size: 0.85em;
-}
-
-.section-content >>> th,
-.section-content >>> td {
-  border: 1px solid #ddd;
-  padding: 4px 8px;
-  text-align: left;
-}
-
-.section-content >>> th {
-  background: rgba(0, 0, 0, 0.05);
-  font-weight: 600;
-}
-
-/* Fade overlay for collapsed state - semi-transparent peek */
-.fade-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(
-    to bottom,
-    rgba(225, 225, 225, 0) 0%,
-    rgba(225, 225, 225, 0.6) 40%,
-    rgba(225, 225, 225, 0.95) 100%
-  );
-  cursor: pointer;
-  display: flex;
-  align-items: flex-end;
   justify-content: center;
-  padding-bottom: 6px;
+  padding: 48px 32px;
+  text-align: center;
 }
 
-.fade-overlay::after {
-  content: 'Click to expand';
-  font-size: 0.75em;
-  color: #007bff;
-  font-weight: 500;
-  opacity: 0;
-  transition: opacity 0.2s;
+.welcome-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25);
 }
 
-.fade-overlay:hover::after {
-  opacity: 1;
+.welcome-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
 }
 
-/* Summary section */
-.summary-section {
-  margin: 8px 0 4px 0;
-  padding: 0 4px;
+.welcome-title {
+  font-size: 1.35em;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
 }
 
-.section-title-static {
-  font-weight: bold;
-  font-size: 0.95em;
-  color: #333;
-  margin-bottom: 6px;
-  padding: 4px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.summary-content {
+.welcome-subtitle {
   font-size: 0.92em;
-  line-height: 1.6;
-  color: #222;
+  color: #6b7280;
+  margin: 0 0 28px 0;
+  max-width: 400px;
+  line-height: 1.5;
 }
 
-.summary-content >>> table {
-  border-collapse: collapse;
+.welcome-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
-  margin: 8px 0;
-  font-size: 0.9em;
+  max-width: 420px;
 }
 
-.summary-content >>> th,
-.summary-content >>> td {
-  border: 1px solid #ddd;
-  padding: 4px 8px;
+.suggestion-chip {
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.85em;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fff;
   text-align: left;
 }
 
-.aipom-label {
-  font-size: 0.8em;
-  color: #888;
-  margin-bottom: 6px;
-  font-weight: 500;
+.suggestion-chip:hover {
+  border-color: #667eea;
+  background: #f0f1ff;
+  color: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
 }
 
-/* Scrollbar */
+/* --- Chat Messages Area --- */
+.chat-messages {
+  flex: 1;
+  padding: 24px 20px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
 .chat-messages::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .chat-messages::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 10px;
+  background: transparent;
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
-  background: #bbb;
-  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
 }
 
-.message-timestamp {
-  font-size: 0.75em;
-  margin-top: 5px;
-  color: #999;
-  text-align: right;
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* --- Message Row --- */
+.message-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-row--user {
+  flex-direction: row-reverse;
+}
+
+.message-row--system {
+  flex-direction: row;
+}
+
+/* --- Avatar --- */
+.avatar-wrapper {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   object-fit: cover;
-  margin: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.user-avatar {
-  float: right;
+/* --- Message Body --- */
+.message-body {
+  max-width: 78%;
+  min-width: 60px;
+  position: relative;
 }
 
-.system-avatar {
-  float: left;
+.message-body--user {
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: #fff;
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.2);
 }
 
-.message-container {
-  display: flex;
-  align-items: flex-start;
-  clear: both;
+.message-body--system {
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 18px 18px 18px 4px;
+  padding: 16px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
-.user-message-container {
-  justify-content: flex-end;
+/* --- Timestamp --- */
+.message-time {
+  font-size: 0.7em;
+  color: #9ca3af;
+  margin-top: 6px;
+  text-align: right;
 }
 
-.system-message-container {
-  justify-content: flex-start;
+.message-body--user .message-time {
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.execute-code-btn {
-  background-color: #007bff;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  right: 10px;
-  bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.2s, transform 0.2s;
+/* --- Plain text messages --- */
+.plain-text {
+  font-size: 0.92em;
+  line-height: 1.65;
+  word-break: break-word;
 }
 
-.icon-play {
-  fill: white;
-  width: 20px;
-  height: 20px;
+.plain-text >>> p {
+  margin: 0 0 8px 0;
 }
 
-.execute-code-btn:hover {
-  background-color: #0056b3;
+.plain-text >>> p:last-child {
+  margin-bottom: 0;
 }
 
-.execute-code-btn:active {
-  transform: scale(0.9);
-}
-
-pre, code {
-  background-color: #f4f4f4;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
-  overflow: auto;
+.plain-text >>> pre,
+.plain-text >>> code {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.88em;
+  overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-all;
 }
 
-.svg-item {
+.plain-text >>> code {
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* --- Structured Response: Summary --- */
+.response-summary {
+  margin-bottom: 12px;
+}
+
+.summary-text {
+  font-size: 0.93em;
+  line-height: 1.7;
+  color: #1f2937;
+}
+
+.summary-text >>> p {
+  margin: 0 0 8px 0;
+}
+
+.summary-text >>> p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-text >>> table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 0.88em;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.summary-text >>> th {
+  background: #f0f1ff;
+  color: #4338ca;
+  font-weight: 600;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid #e0e2ff;
+}
+
+.summary-text >>> td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+
+.summary-text >>> tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Detail Cards --- */
+.detail-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-card {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  background: #fafbfc;
+  transition: border-color 0.2s;
+}
+
+.detail-card:hover {
+  border-color: #d1d5db;
+}
+
+/* Card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.card-header:hover {
+  background: #f3f4f6;
+}
+
+.card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.card-icon--reasoning {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.card-icon--evidence {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.card-icon--model {
+  background: #fce7f3;
+  color: #db2777;
+}
+
+.card-icon--tools {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.card-icon--figures {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 0.85em;
+  color: #374151;
+}
+
+.card-badge {
+  font-size: 0.7em;
+  font-weight: 700;
+  background: #e5e7eb;
+  color: #6b7280;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 2px;
+}
+
+.card-chevron {
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.card-chevron--open {
+  transform: rotate(90deg);
+}
+
+/* Card body */
+.card-body {
+  overflow: hidden;
+}
+
+.card-content {
+  padding: 0 14px 14px 14px;
+  font-size: 0.86em;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.card-content >>> table {
+  border-collapse: collapse;
+  width: 100%;
   margin: 8px 0;
+  font-size: 0.9em;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.card-content >>> th {
+  background: #f9fafb;
+  font-weight: 600;
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.card-content >>> td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Slide transition */
+.slide-enter-active {
+  transition: all 0.3s ease;
+  max-height: 2000px;
+}
+
+.slide-leave-active {
+  transition: all 0.25s ease;
+  max-height: 2000px;
+}
+
+.slide-enter,
+.slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* --- Tool Calls --- */
+.tool-calls-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tool-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.82em;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  transition: all 0.15s;
+}
+
+.tool-pill:hover {
+  background: #f3f4f6;
+}
+
+.tool-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tool-pill--success .tool-pill-dot {
+  background: #10b981;
+  box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+}
+
+.tool-pill--fail .tool-pill-dot {
+  background: #ef4444;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
+}
+
+.tool-pill-name {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-weight: 500;
+  color: #374151;
+}
+
+.tool-pill-meta {
+  color: #9ca3af;
+  font-size: 0.9em;
+}
+
+.tool-pill-badge {
+  background: linear-gradient(135deg, #667eea, #5a67d8);
+  color: white;
+  font-size: 0.7em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* --- SVG Models --- */
+.svg-item {
+  margin: 10px 0;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
 }
 
 .svg-label {
   font-size: 0.8em;
-  color: #666;
-  margin-bottom: 4px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .svg-container >>> svg {
@@ -942,102 +1236,269 @@ pre, code {
   height: auto;
 }
 
-/* Tool calls list */
-.tool-calls-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.tool-call-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.82em;
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.tool-success .tool-icon {
-  color: #28a745;
-}
-
-.tool-fail .tool-icon {
-  color: #dc3545;
-}
-
-.tool-name {
-  font-family: monospace;
-  font-weight: 500;
-  color: #333;
-}
-
-.tool-rows {
-  color: #888;
-  font-size: 0.9em;
-}
-
-.tool-badge {
-  background: #007bff;
-  color: white;
-  font-size: 0.7em;
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-weight: 600;
-}
-
-/* Publication figures gallery */
+/* --- Publication Figures --- */
 .figures-gallery {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.figure-item {
+.figure-card {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.figure-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .figure-image {
   width: 100%;
-  max-width: 100%;
-  height: auto;
-  border-radius: 4px;
+  display: block;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: opacity 0.2s;
 }
 
 .figure-image:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.92;
+}
+
+.figure-footer {
+  padding: 12px 14px;
 }
 
 .figure-caption {
-  margin-top: 8px;
-  font-size: 0.88em;
-  color: #444;
-  line-height: 1.4;
-  text-align: justify;
+  font-size: 0.85em;
+  color: #4b5563;
+  line-height: 1.5;
 }
 
 .figure-label {
   font-weight: 700;
-  color: #222;
+  color: #1f2937;
 }
 
 .figure-download {
-  display: inline-block;
-  margin-top: 6px;
-  font-size: 0.8em;
-  color: #007bff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.78em;
+  color: #667eea;
   text-decoration: none;
-  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s;
 }
 
 .figure-download:hover {
+  color: #4338ca;
+}
+
+.download-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* --- Typing Indicator --- */
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  padding: 4px 0;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background: #d1d5db;
+  border-radius: 50%;
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    background: #d1d5db;
+  }
+  30% {
+    transform: translateY(-6px);
+    background: #667eea;
+  }
+}
+
+/* --- Input Area --- */
+.input-area {
+  padding: 12px 20px 16px 20px;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.input-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-label {
+  font-size: 0.78em;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: #f3f4f6;
+  border-radius: 14px;
+  padding: 6px 6px 6px 16px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-box {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.92em;
+  color: #1f2937;
+  resize: none;
+  line-height: 1.5;
+  padding: 6px 0;
+  max-height: 120px;
+  font-family: inherit;
+}
+
+.input-box::placeholder {
+  color: #9ca3af;
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.send-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.send-btn--active {
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.send-btn--active:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.send-btn:disabled {
+  cursor: default;
+}
+
+/* --- Article Results --- */
+.message-body >>> .article-result {
+  display: flex;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.message-body >>> .article-index {
+  width: 28px;
+  height: 28px;
+  background: #f0f1ff;
+  color: #4338ca;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85em;
+  flex-shrink: 0;
+}
+
+.message-body >>> .article-body {
+  flex: 1;
+}
+
+.message-body >>> .article-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+}
+
+.message-body >>> .article-meta {
+  font-size: 0.82em;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.message-body >>> .article-score {
+  font-size: 0.78em;
+  color: #667eea;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.message-body >>> .article-summary {
+  font-size: 0.85em;
+  color: #4b5563;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.message-body >>> .article-link {
+  font-size: 0.8em;
+  color: #667eea;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.message-body >>> .article-link:hover {
   text-decoration: underline;
+}
+
+.message-body >>> .empty-result {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9em;
+  padding: 8px 0;
 }
 </style>

@@ -258,7 +258,7 @@ import HeaderBar from '@/components/mouse/HeaderBar.vue'
 import NeuronList from '@/components/mouse/NeuronList.vue'
 import NeuronDetail from '@/components/mouse/NeuronDetail.vue'
 import NeuronSearch from '@/components/mouse/NeuronSearch.vue'
-import { getNeuronInfo, searchNeurons, searchSimilarNeuron, uploadNeuron, searchROINeuron, AIChat, kgCoTAnswer, AI_RAG, getSearchIntent, ArticleSearch, CodeGenerator, executeCode, getSearchCondition, getGeneObj, AgenticSearch } from '@/request/apis/mouse/Neuron'
+import { getNeuronInfo, searchNeurons, searchSimilarNeuron, uploadNeuron, searchROINeuron, AIChat, kgCoTAnswer, AI_RAG, getSearchIntent, ArticleSearch, CodeGenerator, getSearchCondition, getGeneObj, AgenticSearch } from '@/request/apis/mouse/Neuron'
 import SmallScreenAlert from '@/components/common/SmallScreenAlert.vue'
 import NeuronLLM from '@/components/mouse/NeuronLLM.vue'
 import AISearchWindow from '@/components/mouse/AISearchWindow.vue'
@@ -538,19 +538,6 @@ export default class Container extends Vue {
     this.neuronList.setListData(neurons)
     this.neuronsList = neurons
   }
-  private async executeCode (func: any = () => {}) {
-    const code = this.aiSearchWindow.code
-    func()
-    try {
-      // eslint-disable-next-line camelcase
-      const response = await executeCode(document.body).start()
-      // let res = JSON.parse(response)
-      this.aiSearchWindow.addResponseFromAPI(response.response)
-      func()
-    } catch (e) {
-      console.error(e)
-    }
-  }
 
   //  private async searchNeurons(criteria: any = undefined, ids: string[] | undefined = undefined, func: any = () => {}) {
   //     if (!criteria) {
@@ -661,8 +648,10 @@ export default class Container extends Vue {
         this.aiSearchWindow.addResponseFromAPI(agenticSearchAnswer)
         func()
       } catch (e) {
-        this.aiSearchWindow.addResponseFromAPI('There are some issues, please try again later.')
-        console.error(e)
+        const err = e as any
+        const errMsg = err?.response?.data?.detail || err?.message || 'Unknown error'
+        this.aiSearchWindow.addResponseFromAPI(`Analysis request failed: ${errMsg}. Please try again.`)
+        console.error('AIPOM agent error:', e)
       }
     }
   }
@@ -1472,117 +1461,82 @@ export default class Container extends Vue {
     box-shadow: 3px 3px 8px 2px var(--shadow-color);
   }
 }
+/* === AIPOM Dialog Shell === */
 .AIWindow {
   width: 50%;
   top: 5vh;
 }
 
 .AIWindow .el-dialog__header {
-  /* 对话框头部的样式，如果需要的话 */
-  text-align: center;
-  padding: 15px 20px;
+  text-align: left;
+  padding: 16px 24px 12px 24px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .AIWindow .el-dialog {
-  /* 设置对话框的背景颜色为现代的灰色，并略微调整阴影 */
-  background: #f5f5f5; /* 调整为您喜欢的颜色 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .AIWindow .el-dialog__body {
-  padding: 8px 12px 4px 12px;
+  padding: 0;
 }
 
 .AIWindow .chat-window {
   max-width: none;
   box-shadow: none;
-  height: 75vh;
+  border: none;
+  border-radius: 0;
+  height: 72vh;
   width: 100%;
   margin: 0;
 }
 
-.AIWindow .chat-messages {
-  /* 设置消息区域的样式，允许滚动 */
+.AIWindow .chat-messages,
+.AIWindow .welcome-state {
   overflow-y: auto;
-  height: 100%; /* 或根据需要设置一个固定高度 */
+  height: 100%;
 }
 
-/* 样式调整，以适应聊天窗口内的消息气泡 */
-.AIWindow .user-message, .AIWindow .system-message {
-  /* 限制气泡宽度，确保消息在对话框中正确显示 */
-  max-width: 70%;
-  margin-bottom: 10px;
-  border-radius: 18px;
-  padding: 10px;
-}
-
-/* 用户消息的特定样式 */
-.AIWindow .user-message {
-  /* 靠右浮动，背景色调整 */
-  float: right;
-  clear: both;
-  background-color: #007bff;
-  color: white;
-  margin-right: 20px; /* 消息与对话框边缘的距离 */
-}
-
-/* 系统消息的特定样式 */
-.AIWindow .system-message {
-  /* 靠左浮动，背景色调整 */
-  float: left;
-  clear: both;
-  background-color: #e1e1e1;
-  color: black;
-  margin-left: 20px; /* 消息与对话框边缘的距离 */
-}
-
-/* 输入框样式调整，以适应对话框 */
-.AIWindow .input-box {
-  width: 100%;
-  margin: 2px 0 0 0;
-  padding: 10px 15px;
-  border-radius: 22px;
-  border: 2px solid #007bff;
-  outline: none;
-}
-
-/* 对话框底部按钮的样式 */
+/* Dialog footer buttons */
 .AIWindow .dialog-footer {
   text-align: right;
-  padding: 4px 12px;
+  padding: 8px 16px;
 }
 
-/* 确保按钮具有一致的样式 */
 .AIWindow .el-button {
-  margin-left: 10px; /* 按钮之间的间距 */
+  margin-left: 10px;
 }
 
-/* 按钮样式 */
 .AIWindow .dialog-footer .el-button {
-  border: none; /* 移除边框 */
-  box-shadow: none; /* 移除阴影 */
-  border-radius: 4px; /* 轻微的圆角 */
-  background: #007bff; /* 蓝色背景，可以根据您的品牌颜色调整 */
-  color: white; /* 白色文字 */
-  margin-left: 8px; /* 按钮之间的间距 */
+  border: none;
+  box-shadow: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+  color: white;
+  margin-left: 8px;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .AIWindow .dialog-footer .el-button:hover {
-  background: #0056b3; /* 悬浮时更深的蓝色 */
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+  transform: translateY(-1px);
 }
 
 .AIWindow .dialog-footer .el-button:active {
-  background: #003a75; /* 按下时的颜色 */
+  transform: translateY(0);
 }
 
-/* 第一个按钮使用透明背景，以区分它与其他操作按钮 */
 .AIWindow .dialog-footer .el-button:first-child {
   background: transparent;
-  color: #007bff;
+  color: #667eea;
 }
 
 .AIWindow .dialog-footer .el-button:first-child:hover {
-  background: rgba(0, 123, 255, 0.1); /* 悬浮时的背景颜色 */
+  background: rgba(102, 126, 234, 0.08);
 }
 .inline-loading {
   display: flex; /* Flexbox to align spinner and text */
