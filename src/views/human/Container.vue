@@ -354,9 +354,11 @@ export default class Container extends Vue {
     }
     if (neuronInfo.viewer_info && neuronInfo.viewer_info.length > 0) {
       // Set neuron target position to the brain region centroid before loading OBJ
-      const brainRegion = neuronInfo.celltype || neuronInfo.brain_region || ''
-      const centroid = brainRegion ? this.neuronDetail.neuronInfo.getRegionCentroid(brainRegion) : null
-      this.neuronDetail.neuronInfo.neuronScene.setNeuronTargetPos(centroid)
+      // Treat "Unknown" as invalid — fall through to brain_region
+      const ct = neuronInfo.celltype && neuronInfo.celltype.toUpperCase() !== 'UNKNOWN' ? neuronInfo.celltype : ''
+      const brainRegion = ct || neuronInfo.brain_region || ''
+      const targets = brainRegion ? this.neuronDetail.neuronInfo.getRegionPlacementTargets(brainRegion) : []
+      this.neuronDetail.neuronInfo.neuronScene.setNeuronTargetPosFromTargets(targets)
       this.neuronDetail.neuronInfo.neuronViewerReconstructionData = neuronInfo.viewer_info
       await this.neuronDetail.neuronInfo.updateReconstruction(needClear)
       await this.$nextTick()
@@ -1015,13 +1017,10 @@ export default class Container extends Vue {
    * @param switchTab 是否要主动切换到3D viewer栏
    */
   public async checkNeuron (neuronDetail: any, switchTab: boolean = false) {
-    if (switchTab && this.neuronDetail.selectedTab !== 'multiNeuronsViewer') {
+    // Always switch to multi-neuron viewer when a checkbox is clicked
+    if (this.neuronDetail.selectedTab !== 'multiNeuronsViewer') {
       this.neuronDetail.selectedTab = 'multiNeuronsViewer'
       await this.$nextTick()
-    }
-
-    if (this.neuronDetail.selectedTab !== 'multiNeuronsViewer') {
-      return
     }
 
     const baseData = {
@@ -1066,9 +1065,12 @@ export default class Container extends Vue {
       }
 
       // Set neuron target position to brain region centroid
-      const brainRegion = neuronInfo.celltype || neuronDetail.celltype || ''
-      const centroid = brainRegion ? this.neuronDetail.neuronInfo.getRegionCentroid(brainRegion) : null
-      neuronScene.setNeuronTargetPos(centroid, true) // jitter to avoid overlap in multi-viewer
+      // Treat "Unknown" as invalid — fall through to brain_region
+      const ct1 = neuronInfo.celltype && neuronInfo.celltype.toUpperCase() !== 'UNKNOWN' ? neuronInfo.celltype : ''
+      const ct2 = neuronDetail.celltype && neuronDetail.celltype.toUpperCase() !== 'UNKNOWN' ? neuronDetail.celltype : ''
+      const brainRegion = ct1 || ct2 || neuronInfo.brain_region || neuronDetail.brain_region || ''
+      const targets = brainRegion ? this.neuronDetail.neuronInfo.getRegionPlacementTargets(brainRegion) : []
+      neuronScene.setNeuronTargetPosFromTargets(targets) // distribute across L/R sub-regions
 
       // Human neurons may not have full viewer_info with 4 children
       if (neuronInfo.viewer_info && neuronInfo.viewer_info.length > 0 && neuronInfo.viewer_info[0].children) {

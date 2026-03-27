@@ -103,6 +103,8 @@ export default class NeuronScene extends Vue {
   private centerShift!: THREE.Vector3
   // Target position for human neuron OBJs (brain region centroid in VTK coords)
   private neuronTargetPos: THREE.Vector3 | null = null
+  // Track how many neurons have been placed per region for even distribution
+  private regionNeuronCounter: Map<string, number> = new Map()
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
   // private scene!: THREE.Scene
@@ -204,21 +206,68 @@ export default class NeuronScene extends Vue {
   /**
    * Set the target position for human neuron OBJs (brain region centroid in VTK coordinates).
    * Call this before loading neuron OBJ files so they get positioned at the correct brain region.
+   *
+   * @param centroid  [x, y, z] centroid of the brain region in VTK coords (legacy single-target)
+   * @param regionKey  Brain region key for tracking distribution count (legacy)
    */
-  public setNeuronTargetPos (centroid: number[] | null, jitter: boolean = false) {
+  public setNeuronTargetPos (centroid: number[] | null, regionKey: string = '') {
     if (centroid && centroid.length >= 3) {
-      let x = centroid[0]; let y = centroid[1]; let z = centroid[2]
-      // Add small jitter to avoid overlapping neurons in multi-viewer
-      if (jitter) {
-        const offset = 8
-        x += (Math.random() - 0.5) * offset
-        y += (Math.random() - 0.5) * offset
-        z += (Math.random() - 0.5) * offset
-      }
-      this.neuronTargetPos = new THREE.Vector3(x, y, z)
+      this.setNeuronTargetPosFromTargets([{ centroid, key: regionKey }])
     } else {
       this.neuronTargetPos = null
     }
+  }
+
+  /**
+   * Set the target position from an array of placement targets (leaf brain regions).
+   * Neurons are distributed across the targets round-robin, then spread evenly
+   * around each target's centroid using Fibonacci sphere distribution.
+   *
+   * @param targets  Array of {centroid: [x,y,z], key: string} — one per leaf brain region
+   */
+  public setNeuronTargetPosFromTargets (targets: Array<{centroid: number[], key: string}>) {
+    if (!targets || targets.length === 0) {
+      this.neuronTargetPos = null
+      return
+    }
+
+    // Pick which target region to place in, cycling round-robin across targets
+    // Use a combined key for the parent region to track round-robin assignment
+    const parentKey = targets.map(t => t.key).sort().join('|')
+    const parentIdx = this.regionNeuronCounter.get('__parent__' + parentKey) || 0
+    this.regionNeuronCounter.set('__parent__' + parentKey, parentIdx + 1)
+
+    const target = targets[parentIdx % targets.length]
+    let x = target.centroid[0]; let y = target.centroid[1]; let z = target.centroid[2]
+
+    // Distribute within this target region using Vogel sunflower spiral.
+    // This gives optimal 2D packing — neurons spread outward uniformly
+    // from the centroid with guaranteed minimum spacing.
+    const subKey = target.key || parentKey
+    const idx = this.regionNeuronCounter.get(subKey) || 0
+    this.regionNeuronCounter.set(subKey, idx + 1)
+    // Golden angle in radians ≈ 137.508° — optimal for sunflower packing
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+    // Spacing factor: controls distance between neurons (in VTK mm units)
+    // r_n = spacing * sqrt(n), so n=1→4mm, n=5→9mm, n=10→13mm, n=20→18mm
+    const spacing = 4
+    const r = spacing * Math.sqrt(idx + 1)
+    const theta = goldenAngle * (idx + 1)
+    // Distribute in a disk perpendicular to the approximate cortical surface.
+    // Use 3 Z-layers to add slight depth variation without going too far.
+    const zLayer = ((idx % 3) - 1) * 2 // -2, 0, +2 mm
+    x += r * Math.cos(theta)
+    y += r * Math.sin(theta)
+    z += zLayer
+
+    this.neuronTargetPos = new THREE.Vector3(x, y, z)
+  }
+
+  /**
+   * Reset the per-region neuron placement counter.
+   */
+  public resetRegionNeuronCounter () {
+    this.regionNeuronCounter.clear()
   }
 
   public setColor (color: string) {
@@ -679,6 +728,7 @@ export default class NeuronScene extends Vue {
       this.unloadObj(neuronId)
     }
     this.neuronDataMap.clear()
+    this.regionNeuronCounter.clear()
   }
   public unloadAllGeneObj () {
     if (this.geneDataMap) {

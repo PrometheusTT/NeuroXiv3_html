@@ -378,22 +378,14 @@ export default class NeuronInfo extends Vue {
   }
 
   /**
-   * Auto-highlight a brain region in the atlas tree by matching the acronym.
-   * Finds nodes whose acronym matches (or starts with) the given region, checks them,
-   * and expands their parent nodes so the region is visible and loaded.
+   * Find a node in the atlas tree by acronym (case-insensitive).
    */
-  /**
-   * Look up the centroid of a brain region from the atlas tree by acronym.
-   * Returns [x, y, z] in VTK coordinates or null if not found.
-   */
-  public getRegionCentroid (region: string): number[] | null {
-    if (!region) return null
-    const regionUpper = region.toUpperCase()
-    let result: number[] | null = null
+  private findRegionNode (regionUpper: string): any | null {
+    let result: any = null
     const search = (nodes: any[]) => {
       for (const node of nodes) {
-        if ((node.acronym || '').toUpperCase() === regionUpper && node.centroid) {
-          result = node.centroid
+        if ((node.acronym || '').toUpperCase() === regionUpper) {
+          result = node
           return
         }
         if (node.children) search(node.children)
@@ -404,16 +396,90 @@ export default class NeuronInfo extends Vue {
     return result
   }
 
+  /**
+   * Collect all leaf-level centroids (with keys) for a region node.
+   * If the node has children with VTP meshes, returns their centroids.
+   * If the node itself is a leaf with a VTP mesh, returns its own centroid.
+   */
+  private collectLeafCentroids (node: any): Array<{centroid: number[], key: string}> {
+    const results: Array<{centroid: number[], key: string}> = []
+    if (!node) return results
+    // If node has children with actual meshes, recurse into them
+    if (node.children && node.children.length > 0) {
+      const hasLeafMesh = node.children.some((c: any) => c.src && !c.disabled)
+      if (hasLeafMesh) {
+        for (const child of node.children) {
+          if (child.src && !child.disabled && child.centroid) {
+            results.push({ centroid: child.centroid, key: child.acronym || '' })
+          }
+        }
+        if (results.length > 0) return results
+      }
+      // Children don't have meshes themselves, recurse deeper
+      for (const child of node.children) {
+        results.push(...this.collectLeafCentroids(child))
+      }
+      if (results.length > 0) return results
+    }
+    // Node is a leaf or has no mesh children — use own centroid
+    if (node.centroid) {
+      results.push({ centroid: node.centroid, key: node.acronym || '' })
+    }
+    return results
+  }
+
+  /**
+   * Get placement targets for a brain region annotation.
+   * Supports multi-region annotations (e.g. "MFG/IFG", "MFG,IFG", "MFG&IFG")
+   * for boundary neurons.
+   *
+   * For parent regions like "STG", returns the leaf sub-regions (STG-L, STG-R)
+   * so neurons are placed inside actual brain region meshes, not at the midline.
+   *
+   * Returns array of {centroid, key} pairs, or empty array if nothing found.
+   */
+  public getRegionPlacementTargets (region: string): Array<{centroid: number[], key: string}> {
+    if (!region) return []
+    const parts = region.split(/[\/,&+]\s*|\s+/).map(s => s.trim().toUpperCase()).filter(s => s.length > 0)
+    if (parts.length === 0) return []
+
+    const targets: Array<{centroid: number[], key: string}> = []
+    for (const part of parts) {
+      const node = this.findRegionNode(part)
+      if (node) {
+        targets.push(...this.collectLeafCentroids(node))
+      }
+    }
+    return targets
+  }
+
+  /**
+   * Legacy single-centroid lookup. Still used by other callers.
+   * Returns [x, y, z] or null.
+   */
+  public getRegionCentroid (region: string): number[] | null {
+    const targets = this.getRegionPlacementTargets(region)
+    if (targets.length === 0) return null
+    if (targets.length === 1) return targets[0].centroid
+    // Average for backward compatibility
+    const avg = [0, 0, 0]
+    for (const t of targets) {
+      avg[0] += t.centroid[0]; avg[1] += t.centroid[1]; avg[2] += t.centroid[2]
+    }
+    avg[0] /= targets.length; avg[1] /= targets.length; avg[2] /= targets.length
+    return avg
+  }
+
   public highlightBrainRegion (region: string) {
     if (!region || !this.brainTree) return
-    const regionUpper = region.toUpperCase()
+    // Support multi-region annotations (e.g. "MFG/IFG") — highlight all matched regions
+    const regionParts = region.split(/[\/,&+]\s*|\s+/).map(s => s.trim().toUpperCase()).filter(s => s.length > 0)
+    if (regionParts.length === 0) return
     const matchIds: number[] = []
-    const findMatches = (nodes: any[]) => {
+    const findMatchesForRegion = (regionUpper: string, nodes: any[]) => {
       for (const node of nodes) {
         const acr = (node.acronym || '').toUpperCase()
-        // Match exact acronym or parent acronym (e.g. "MFG" matches all MFG children)
         if (acr === regionUpper) {
-          // Collect leaf children that have actual VTK src
           const collectLeaves = (n: any) => {
             if (!n.children || n.children.length === 0) {
               if (n.src && !n.disabled) matchIds.push(n.id)
@@ -427,10 +493,12 @@ export default class NeuronInfo extends Vue {
           if (node.children) node.children.forEach(collectLeaves)
           return
         }
-        if (node.children) findMatches(node.children)
+        if (node.children) findMatchesForRegion(regionUpper, node.children)
       }
     }
-    findMatches(this.neuronViewerData)
+    for (const part of regionParts) {
+      findMatchesForRegion(part, this.neuronViewerData)
+    }
     for (const id of matchIds) {
       this.brainTree.setChecked(id, true, false)
       this.expandParentNodes(id)
